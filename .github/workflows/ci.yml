@@ -46,16 +46,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install locked direct frontend dependencies
+      - name: Install frontend dependencies from committed lockfile
         working-directory: frontend
-        run: npm install --no-audit
+        run: npm ci --no-audit
       - name: Frontend checks and seat map tests
         working-directory: frontend
         run: npm run check && npm test && npm run build
-      - name: Capture generated frontend dependency lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: trippy-corporate-frontend-lock
-          path: frontend/package-lock.json
-          retention-days: 1
-          if-no-files-found: error
