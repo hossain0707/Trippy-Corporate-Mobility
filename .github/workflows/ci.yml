@@ -52,3 +52,10 @@ jobs:
       - name: Frontend checks and seat map tests
         working-directory: frontend
         run: npm run check && npm test && npm run build
+      - name: Capture generated frontend dependency lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: trippy-corporate-frontend-lock
+          path: frontend/package-lock.json
+          retention-days: 1
+          if-no-files-found: error
