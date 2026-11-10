@@ -37,6 +37,8 @@ def test_two_riders_cannot_buy_same_physical_seat():
         try:
             with connect(url) as conn:
                 barrier.wait(timeout=6)
+                # Follow the booking API lock order to serialize rival seat holds.
+                conn.execute('SELECT id FROM app.services WHERE id=%s FOR UPDATE',(service,))
                 conn.execute('''INSERT INTO app.reservations(user_id,service_id,seat_id,pickup_stop_id,dropoff_stop_id,
                    starts_on,ends_before,months,base_amount_bdt,discount_percent,amount_bdt,hold_expires_at,idempotency_key)
                    VALUES(%s,%s,%s,%s,%s,%s,%s,1,8000,0,8000,now()+interval '10 minutes',%s)''',
