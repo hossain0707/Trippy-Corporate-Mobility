@@ -8,7 +8,7 @@
 | Real OTP reliability and abuse | High | Adapter coded; provider not connected | SMS testing, edge rate limiting, MFA for staff |
 | Operational safety and incident response | Critical | Support ticket UI only | Staffed dispatch, emergency response and driver vetting |
 | Payments / chargebacks / refunds | Critical | Validation code coded; real merchant not tested | Merchant sandbox/live E2E; ledger/chargeback policy |
-| Dependency and supply chain drift | High | Direct deps pinned; transitive lockfile outstanding | Generate/commit lockfile, scan and pin image digests |
+| Dependency and supply chain drift | High | Direct deps pinned; frontend lockfile committed, backend transitive locks and audit pending | Add Python transitive lock; scan dependencies and pin image digests |
 | Infrastructure durability | Critical | Local Compose only | Managed host, isolated DB, monitoring, PITR and restore drills |
 | Physical seat-map mismatch | High | Illustrative templates; admin verification present | Inspect every vehicle, exits and capacity in person |
 

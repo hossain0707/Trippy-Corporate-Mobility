@@ -15,7 +15,7 @@ This is proprietary source code, not an invitation for public reuse. Contact the
 
 ```bash
 cd backend && python -m pip install -r requirements-dev.txt && pytest -q
-cd ../frontend && npm install && npm run check && npm test && npm run build
+cd ../frontend && npm ci && npm run check && npm test && npm run build
 ```
 
 The concurrency test needs a disposable PostgreSQL database with migrations applied and `TEST_DATABASE_URL` configured. Browser-based functional, accessibility, performance, payment, and real-device tests are additional mandatory gates before launch.

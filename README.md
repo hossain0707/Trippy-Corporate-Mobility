@@ -135,7 +135,7 @@ Run on a connected development machine:
 
 ```bash
 cd backend && python -m pip install -r requirements-dev.txt && pytest -q
-cd ../frontend && npm install && npm run check && npm test && npm run build
+cd ../frontend && npm ci && npm run check && npm test && npm run build
 ```
 
 Use `TEST_DATABASE_URL` pointing to a **disposable database whose name contains `test`** to enable `test_postgres_concurrency.py` after applying migrations. Never run destructive DB tests against production.

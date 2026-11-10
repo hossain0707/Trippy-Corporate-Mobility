@@ -4,7 +4,7 @@
 
 - [ ] `docker compose` runs on a connected machine; all four migrations applied successfully
 - [ ] Python unit tests + PostgreSQL integration concurrency test pass against disposable database
-- [ ] Frontend `npm install`, unit tests and `npm run build` pass with lockfile generated and committed
+- [ ] Frontend `npm ci`, unit tests and `npm run build` pass using the committed lockfile
 - [ ] End-to-end real OTP, expired/reused token and admin role test pass
 - [ ] Concurrent booking load test (50 riders/requests, distinct + same seat), expiry and replay test pass
 - [ ] Live route-map ETA / distance-to-stop uses a licensed routing provider (current nearby-stop UX is straight-line only)
@@ -40,4 +40,4 @@
 - [ ] Assign team members and enforce branch protection, status checks and CODEOWNERS reviews.
 - [ ] Review TRIPPY LTD proprietary license and confirm contributor assignment agreements.
 - [ ] Consider switching this repository to **private** before adding trade secrets; public visibility does not mean open-source licensing.
-- [ ] Commit a reproducible frontend lockfile and verify dependency audits (unable to generate lockfile in offline packaging environment).
+- [x] Commit a reproducible frontend lockfile; CI uses `npm ci`.\n- [ ] Run full dependency audits, artifact scanning and container image digest pinning.

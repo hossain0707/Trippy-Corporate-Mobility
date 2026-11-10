@@ -2,7 +2,7 @@
 
 ## Local development
 
-1. Install Docker Engine and Compose. Copy `.env.example` to `.env`, set development-only credentials.
+1. Install Docker Engine and Compose. Copy `.env.example` to `.env`, set development-only credentials. Use `npm ci` (not `npm install`) for reproducible frontend dependencies.
 2. Configure a **separate test** Supabase project with a legitimate SMS/OTP provider. Set the *publishable* key in frontend build-time variables; keep the merchant password server-only.
 3. Run `docker compose up --build` from the repository root. Compose starts Postgres, applies numbered SQL migrations, then brings up FastAPI and the static frontend.
 4. Open `http://localhost:5173` and `http://localhost:8000/api/docs`. The latter is intentionally disabled under `APP_ENV=production`.
