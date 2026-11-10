@@ -1,3 +1,4 @@
+import {getSearch} from '../search/index.js';
 import {$,node,state,api,showToast,showModal,closeModal} from '../../core/context.js';
 import {openLogin} from '../auth/index.js';
 $('demandBtn').onclick=()=>{if(!state.user)return openLogin(()=>$('demandBtn').click());showModal('Request a new seat','FLEET DEMAND');const body=$('modalContent');body.append(node('p',{className:'status-note'},'Tell dispatch which Dhaka corridor you need. Requests do not guarantee capacity until a licensed, verified vehicle is added.'));

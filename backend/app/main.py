@@ -20,8 +20,10 @@ log=logging.getLogger('trippy')
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     open_pool()
-    yield
-    close_pool()
+    try:
+        yield
+    finally:
+        close_pool()
 
 app=FastAPI(title='Trippy Corporate API',version='1.0.0',lifespan=lifespan,
             docs_url='/api/docs' if settings().app_env!='production' else None,

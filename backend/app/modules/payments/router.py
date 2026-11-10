@@ -2,7 +2,8 @@
 from hashlib import sha256
 from uuid import UUID,uuid4
 from datetime import datetime,timezone
-from fastapi import APIRouter,Depends,Request
+from fastapi import APIRouter, Depends, Form
+from typing import Annotated
 from fastapi.responses import RedirectResponse
 from ...core.database import connection,one,execute
 from ...core.config import settings
@@ -37,24 +38,25 @@ def checkout(reservation_id:UUID,user=Depends(actor)):
     # External HTTP is outside any long-lived database transaction.
     session=Gateway().start(reference,book['amount_bdt'],book)
     with connection() as conn:
-        execute(conn,'''UPDATE app.payment_attempts SET status='initiated',checkout_url=%s,gateway_session_id=%s WHERE id=%s''',
+        execute(conn,'''UPDATE app.payment_attempts SET status='initiated',checkout_url=%s,gateway_session_id=%s WHERE id=%s AND status='created' ''',
                 (session['checkoutUrl'],session['sessionId'],attempt['id']))
     return {'checkoutUrl':session['checkoutUrl']}
 
 @router.post('/payments/sslcommerz/ipn')
-async def ipn(request:Request):
-    # Notification is untrusted; the provider validation API is the only authority.
-    form=await request.form()
-    transaction_id=str(form.get('tran_id') or '')[:120]
-    validation_id=str(form.get('val_id') or '')[:120]
-    if not transaction_id or not validation_id: fail(400,'Invalid payment notification')
+def ipn(
+    transaction_id: Annotated[str, Form(alias='tran_id', min_length=1, max_length=120)],
+    validation_id: Annotated[str, Form(alias='val_id', min_length=1, max_length=120)],
+):
+    # The provider validation API is the only authority for the notification.
     with connection() as conn:
-        attempt=one(conn,'SELECT id FROM app.payment_attempts WHERE merchant_tran_id=%s',(transaction_id,))
+        attempt=one(conn,'SELECT a.id, a.reservation_id, b.user_id FROM app.payment_attempts a JOIN app.reservations b ON b.id=a.reservation_id WHERE a.merchant_tran_id=%s',(transaction_id,))
     if not attempt: fail(404,'Unknown transaction reference')
     provider=Gateway().validate(validation_id)
     with connection() as conn:
-        attempt=one(conn,'SELECT * FROM app.payment_attempts WHERE merchant_tran_id=%s FOR UPDATE',(transaction_id,))
+        # Match the user-before-reservation lock order used by seat creation.
+        user=one(conn,'SELECT * FROM app.users WHERE id=%s FOR UPDATE',(attempt['user_id'],))
         book=one(conn,'SELECT * FROM app.reservations WHERE id=%s FOR UPDATE',(attempt['reservation_id'],))
+        attempt=one(conn,'SELECT * FROM app.payment_attempts WHERE id=%s FOR UPDATE',(attempt['id'],))
         if attempt['status']=='verified' and book['status']=='confirmed':
             return {'outcome':'already_confirmed'}
         payload_signature=sha256(f'{transaction_id}:{validation_id}'.encode()).hexdigest()
@@ -66,7 +68,6 @@ async def ipn(request:Request):
         if attempt['gateway_validation_id'] and attempt['gateway_validation_id']!=validation_id:
             fail(409,'Conflicting gateway validation reference')
         risk=str(provider.get('risk_level',1))
-        user=one(conn,'SELECT * FROM app.users WHERE id=%s FOR UPDATE',(book['user_id'],))
         previous=one(conn,"SELECT 1 FROM app.reservations WHERE user_id=%s AND id<>%s AND status='confirmed' LIMIT 1",(book['user_id'],book['id']))
         invalid_hold=(book['status']!='held' or book['hold_expires_at']<=datetime.now(timezone.utc))
         welcome_conflict=book['applies_welcome_offer'] and (user['welcome_redeemed_at'] is not None or previous)

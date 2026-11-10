@@ -21,7 +21,7 @@ Trippy Corporate offers fixed-route recurring seat subscriptions for Dhaka offic
 | [Architecture and diagram](docs/ARCHITECTURE.md) | Engineering leads |
 | [API contracts](docs/API_CONTRACTS.md) and [route matrix](docs/API.md) | Backend and frontend |
 | [Team handoff](docs/TEAM_HANDOFF.md) and [contributing](CONTRIBUTING.md) | All contributors |
-| [Deployment](docs/DEPLOYMENT.md) and [infrastructure](infra/README.md) | DevOps/SRE |
+| [Hosted rollout](docs/HOSTED_ROLLOUT.md), [deployment](docs/DEPLOYMENT.md) and [infrastructure](infra/README.md) | DevOps/SRE |
 | [Operations runbook](docs/OPERATIONS.md) | Dispatch and support |
 | [Risk register](docs/RISK_REGISTER.md) and [release gates](docs/PRODUCTION_READINESS.md) | Security, QA, leadership |
 | [Security policy](SECURITY.md) and [proprietary license](LICENSE) | Team members and legal |
@@ -48,7 +48,7 @@ trippy-corporate-fastapi/
 ├── frontend/                          FRONTEND ONLY — ES modules + Vite
 │   ├── src/core/                      API client, session state, shared DOM helpers
 │   ├── src/features/
-│   │   ├── auth/                       phone OTP login and user profile
+│   │   ├── auth/                       email, configured OAuth providers, phone verification and profile
 │   │   ├── search/                     route search
 │   │   ├── booking/                    real physical cabin seat map and checkout
 │   │   ├── passes/                     my subscriptions
@@ -116,7 +116,7 @@ The action refuses to create a second administrator. Subsequent driver/dispatche
 
 1. Administrator registers and physically verifies each vehicle, licensed passenger capacity, seat positions, fitness certificate and insurance expiry.
 2. Administrator creates approved stop locations, morning stop sequence, reverse evening stop sequence, and fixed schedule. The route cannot activate without an approved assigned driver.
-3. Passenger authenticates with phone OTP, completes billing name/email, chooses a route and exactly one available numbered passenger seat for a 1/3/6/12-month period.
+3. Passenger signs in, verifies a mobile number, completes billing name/email, chooses a route and exactly one available numbered passenger seat for a 1/3/6/12-month period.
 4. Python backend validates physical seat ownership, stop ordering, compliance covering the subscription dates, new-user eligibility and server-side price.
 5. Backend inserts a 10-minute hold behind PostgreSQL transaction locks and overlapping-date exclusion constraints. The merchant checkout may extend that hold to 20 minutes.
 6. SSLCOMMERZ notifies the HTTPS IPN. The backend queries the gateway validation API and verifies transaction reference, status, original gross amount, BDT currency and risk level. It confirms the seat only while the hold remains valid. Late/risky payments require reconciliation, not automatic confirmation.
