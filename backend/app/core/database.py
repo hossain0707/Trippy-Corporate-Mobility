@@ -8,8 +8,9 @@ _pool = None
 
 def open_pool():
     global _pool
-    _pool = ConnectionPool(conninfo=settings().database_url, min_size=1, max_size=12,
-                           kwargs={'row_factory': dict_row}, open=True)
+    config = settings()
+    _pool = ConnectionPool(conninfo=config.database_url, min_size=1, max_size=config.database_pool_max_size,
+                           kwargs={'row_factory': dict_row}, timeout=8, open=True)
     _pool.wait(timeout=20)
 
 def close_pool():

@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
     app_env: str = 'development'
+    database_pool_max_size: int = Field(default=4, ge=1, le=30)
     database_url: str = 'postgresql://trippy:local_only@localhost:5432/trippy'
     web_origin: str = 'http://localhost:5173'
     public_base_url: str = 'http://localhost:8000'
@@ -20,6 +21,8 @@ class Settings(BaseSettings):
             raise ValueError('APP_ENV must be development, staging, or production')
         if self.sslcommerz_mode not in {'sandbox','live'}:
             raise ValueError('Payment gateway mode is invalid')
+        if self.app_env != 'production' and self.sslcommerz_mode == 'live':
+            raise ValueError('Live payments require APP_ENV=production')
         if self.app_env == 'production':
             if not self.public_base_url.startswith('https://') or not self.web_origin.startswith('https://'):
                 raise ValueError('Production URLs must use HTTPS')

@@ -16,11 +16,19 @@
       <div class="header-wrap">
         <a class="logo" href="#search" aria-label="Trippy Corporate home"><span class="logo-mark">t</span><span>trippy<span class="logo-soft"> corporate</span></span></a>
         <nav aria-label="Main navigation"><button type="button" class="nav-btn active" data-page="search">Find a ride</button><button type="button" class="nav-btn" data-page="passes">My passes</button><button type="button" class="nav-btn" data-page="tracking">Live tracking</button><button type="button" class="nav-btn hidden" data-page="driver" id="driverNav">Driver console</button><button type="button" class="nav-btn hidden" data-page="ops" id="opsNav">Operations</button></nav>
-        <button class="account-btn" id="accountBtn" type="button">Sign in <span>↗</span></button>
+        <button class="nav-btn" id="languageBtn" type="button">বাংলা</button>
+        <button class="account-btn" id="accountBtn" type="button">Sign in</button>
       </div>
     </header>
     <main>
-      <section class="hero" id="hero"><div class="hero-text"><div class="eyebrow"><span class="live-dot"></span> DHAKA CORPORATE COMMUTES</div><h1>Find your seat.<br/><em>Love your commute.</em></h1><p>Skip the daily uncertainty. Reserve your preferred seat on a verified fixed-route bus, Hiace or shared car for your morning journey and evening return.</p><div class="hero-features"><span>✓ Two daily shifts</span><span>✓ Reserved seat</span><span>✓ Fixed pickup stops</span></div></div><div class="hero-art" aria-hidden="true"><div class="ticket-top"><span>YOUR DAILY RIDE</span><span>TRIPPY CORPORATE</span></div><div class="ticket-line"><span>HOME</span><b>→</b><span>OFFICE</span></div><div class="ticket-bottom"><div>07:30 <small>AM departure</small></div><div class="ticket-seat">A1</div><div>06:00 <small>PM return</small></div></div><div class="ticket-foot">One seat. Two journeys. Every workday.</div></div></section>
+      <section class="hero" id="hero">
+        <div class="hero-text">
+          <div class="eyebrow">Dhaka corporate commutes</div>
+          <h1>Reserve your commute</h1>
+          <p>Reserve a numbered seat on a verified route for your morning commute and evening return.</p>
+          <div class="hero-features"><span>Morning and evening trips</span><span>Reserved seat</span><span>Fixed pickup stops</span></div>
+        </div>
+      </section>
       <section class="content" id="pageSearch">
         <div class="section-head"><div><div class="eyebrow muted">BUILD YOUR DAILY ROUTINE</div><h2>Book your commute</h2></div><span class="section-note">All fares in Bangladeshi taka</span></div>
         <form id="searchForm" class="search-grid">
@@ -29,11 +37,11 @@
           <label>Vehicle preference<select name="vehicleClass"><option value="">All vehicle types</option><option value="bus">Bus</option><option value="hiace">Hiace</option><option value="car">Shared private car</option></select></label>
           <label>Subscription starts<input id="startDate" name="startDate" type="date" required/></label>
           <label>Booking duration<select id="months" name="months"><option value="1">1 month</option><option value="3">3 months · 25% off</option><option value="6">6 months · 30% off</option><option value="12">12 months · 35% off</option></select></label>
-          <button class="search-submit" type="submit">Find available rides <span>↗</span></button>
+          <button class="search-submit" type="submit">Find available rides ↗</button>
         </form>
         <div class="section-head gap-top"><div><div class="eyebrow muted">ACTIVE SERVICES</div><h2>Routes & available vehicles</h2></div><span id="resultCount" class="section-note" aria-live="polite"></span></div>
         <div id="routeResults" class="route-grid" aria-live="polite"><div class="empty-message">Loading available services…</div></div>
-        <div class="help-banner"><div><b>Don't see your route, or is the vehicle full?</b><p>Tell operations where you'd like to travel. A request is not an extra seat until a verified vehicle is assigned.</p></div><button id="demandBtn" type="button" class="outline-white">Request a seat ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
+        <div class="help-banner"><div><b>Don't see your route, or is the vehicle full?</b><p>Tell us where you need to travel.</p></div><button id="demandBtn" type="button" class="outline-white">Request a seat ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
       </section>
       <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>Your reservations</h2></div></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to see your bookings.</div></div></section>
       <section class="content hidden" id="pageTracking"><div class="section-head"><div><div class="eyebrow muted">LIVE LOCATION</div><h2>Track your assigned ride</h2></div></div><p class="helper-copy">For passenger privacy, only customers with an active, paid seat may view their vehicle. GPS reports are live only when an authorized driver device is transmitting.</p><div id="trackList" class="pass-list"></div><div id="trackResult" class="track-box hidden"></div></section>

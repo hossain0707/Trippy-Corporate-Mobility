@@ -40,4 +40,5 @@
 - [ ] Assign team members and enforce branch protection, status checks and CODEOWNERS reviews.
 - [ ] Review TRIPPY LTD proprietary license and confirm contributor assignment agreements.
 - [ ] Consider switching this repository to **private** before adding trade secrets; public visibility does not mean open-source licensing.
-- [x] Commit a reproducible frontend lockfile; CI uses `npm ci`.\n- [ ] Run full dependency audits, artifact scanning and container image digest pinning.
+- [x] Commit a reproducible frontend lockfile; CI uses `npm ci`.
+- [ ] Run full dependency audits, artifact scanning and container image digest pinning.
