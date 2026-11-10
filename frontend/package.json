@@ -1,0 +1,10 @@
+{
+  "name":"@trippy/corporate-web",
+  "version":"1.0.0",
+  "private":true,
+  "type":"module",
+  "engines":{"node":">=22"},
+  "scripts":{"dev":"vite --host 0.0.0.0", "build":"vite build", "preview":"vite preview --host 0.0.0.0", "check":"node --check src/main.js && node --check src/core/context.js", "test":"node --test test/*.test.mjs"},
+  "dependencies":{"@supabase/supabase-js":"2.49.10","maplibre-gl":"5.4.0"},
+  "devDependencies":{"vite":"6.3.5"}
+}

@@ -1,0 +1,56 @@
+# Development-only stack. Do not expose these host ports to the public Internet.
+services:
+  postgres:
+    image: postgres:16.8-alpine
+    environment:
+      POSTGRES_DB: trippy
+      POSTGRES_USER: trippy
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in root .env}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U trippy -d trippy"]
+      interval: 5s
+      retries: 20
+    ports: ["127.0.0.1:5432:5432"]
+    restart: unless-stopped
+  migrator:
+    build: ./backend
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql://trippy:${DB_PASSWORD}@postgres:5432/trippy
+      APP_ENV: development
+    volumes:
+      - ./database/migrations:/srv/database/migrations:ro
+    command: ["python","-m","scripts.migrate"]
+    restart: 'no'
+  api:
+    build: ./backend
+    depends_on:
+      migrator: {condition: service_completed_successfully}
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://trippy:${DB_PASSWORD}@postgres:5432/trippy
+      WEB_ORIGIN: http://localhost:5173
+      PUBLIC_BASE_URL: http://localhost:8000
+      SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set SUPABASE_PUBLISHABLE_KEY}
+      SSLCOMMERZ_MODE: sandbox
+      SSLCOMMERZ_STORE_ID: ${SSLCOMMERZ_STORE_ID:-}
+      SSLCOMMERZ_STORE_PASSWORD: ${SSLCOMMERZ_STORE_PASSWORD:-}
+    ports: ["127.0.0.1:8000:8000"]
+    restart: unless-stopped
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+        VITE_SUPABASE_URL: ${SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY}
+        VITE_MAPTILER_KEY: ${MAPTILER_KEY:-}
+    depends_on: [api]
+    ports: ["127.0.0.1:5173:80"]
+    restart: unless-stopped
+volumes:
+  dbdata:

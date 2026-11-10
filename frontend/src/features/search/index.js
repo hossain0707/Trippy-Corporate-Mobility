@@ -1,0 +1,18 @@
+import {$,node,state,configured,api,vehicleNames,formatBdt,formatTime} from '../../core/context.js';
+import {openSeats} from '../booking/index.js';
+export function getSearch(){const form=new FormData($('searchForm'));return {pickup:String(form.get('pickup')).trim(),office:String(form.get('office')).trim(),vehicleClass:String(form.get('vehicleClass')),startDate:String(form.get('startDate')),months:Number(form.get('months'))}}
+export async function loadRoutes(){const container=$('routeResults');container.replaceChildren(node('div',{className:'empty-message'},'Checking current routes and availability…'));
+  if(!configured){container.replaceChildren(node('div',{className:'empty-message'},'Connect a real PostgreSQL database and configure the API to list actual verified vehicles. The downloadable preview contains sample journeys.'));return}
+  const q=getSearch(),params=new URLSearchParams();if(q.pickup)params.set('pickup',q.pickup);if(q.office)params.set('office',q.office);if(q.vehicleClass)params.set('vehicleClass',q.vehicleClass);
+  try{const data=await api('/api/services'+(params.size?'?'+params:''));state.services=data;container.replaceChildren();$('resultCount').textContent=`${data.length} active services`;
+    if(!data.length){container.append(node('div',{className:'empty-message'},'No verified active service matches this corridor yet. Request a new route and our operations team can review the demand.'));return}
+    for(const s of data)container.append(routeCard(s));
+  }catch(e){container.replaceChildren(node('div',{className:'empty-message'},e.message))}
+}
+function routeCard(s){const card=node('article',{className:'route-card'});const chip=node('span',{className:'vehicle-chip '+s.vehicle_class},vehicleNames[s.vehicle_class]);const title=node('h3',{},s.home_zone+' → '+s.office_zone);const details=node('div',{className:'route-details'});
+  details.append(node('span',{},'☀ Morning pickup: '+formatTime(s.morning_departure)),node('span',{},'☾ Evening return: '+formatTime(s.evening_departure)),node('span',{},s.code+' · '+s.selectable_seats+' passenger seats'));
+  const bottom=node('div',{className:'route-bottom'});const price=node('div');price.append(node('b',{},formatBdt({bus:5000,hiace:6500,car:8000}[s.vehicle_class])),node('small',{},'per month before discounts'));
+  const button=node('button',{type:'button'},'Choose seat ↗');button.onclick=()=>openSeats(s);bottom.append(price,button);card.append(chip,title,details,bottom);return card;
+}
+$('searchForm').addEventListener('submit',e=>{e.preventDefault();loadRoutes()});
+
