@@ -7,6 +7,8 @@ const redirectTo = new URL(import.meta.env.BASE_URL, location.origin).href;
 const providers = [
   ['google', 'Continue with Google'],
   ['facebook', 'Continue with Facebook'],
+  ['azure', 'Continue with Microsoft'],
+  ['apple', 'Continue with Apple'],
 ].filter(([provider]) => (import.meta.env.VITE_SOCIAL_PROVIDERS || '').split(',').map(value => value.trim()).includes(provider));
 
 const button = (label, type = 'button', className = 'outline') => node('button', {type, className}, label);
@@ -17,6 +19,15 @@ function field(form, label, attributes, value = '') {
   input.value = value;
   wrap.append(input);
   form.append(wrap);
+  if (attributes.type === 'password') {
+    const toggle = button('👁 Show password');
+    toggle.onclick = () => {
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      toggle.textContent = '👁 ' + t(reveal ? 'Hide password' : 'Show password');
+    };
+    form.append(toggle);
+  }
   return input;
 }
 
@@ -90,12 +101,14 @@ export function openLogin(onSuccess, mode = 'login') {
       mobile.onclick = () => openPhoneVerification(false, onSuccess);
       form.append(mobile);
     }
+  }
+  if (!recovery) {
     for (const [provider, label] of providers) {
       const social = button(label);
       social.onclick = async () => {
         social.disabled = true;
         try {
-          const {error} = await supabase.auth.signInWithOAuth({provider, options: {redirectTo}});
+          const {error} = await supabase.auth.signInWithOAuth({provider, options: {redirectTo, ...(provider === 'azure' ? {scopes: 'email'} : {})}});
           if (error) throw error;
         } catch {
           social.disabled = false;
