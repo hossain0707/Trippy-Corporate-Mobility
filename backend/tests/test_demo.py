@@ -18,7 +18,7 @@ KEY=UUID('55555555-5555-4555-8555-555555555555')
 def booking(**overrides):
     payload=dict(seatId=SEAT,pickupZone='Uttara Sector 7',
                  officeZone='Banani',startDate=date(2026,11,16),
-                 months=1,idempotencyKey=KEY)
+                 months=1,idempotencyKey=KEY,paymentMethod='bkash_demo')
     payload.update(overrides)
     return demo.DemoBooking(**payload)
 
@@ -34,12 +34,16 @@ def test_demo_booking_validates_no_shortcuts():
         booking(pickupZone='U')
     with pytest.raises(ValidationError):
         booking(months=2)
+    with pytest.raises(ValidationError):
+        booking(paymentMethod='real_card')
+    with pytest.raises(ValidationError):
+        booking(paymentMethod='real_bkash')
 
 
 def test_demo_booking_no_real_hold_or_payment(monkeypatch):
     monkeypatch.setattr(demo,'demo_period',lambda start,months:date(2026,12,16))
     monkeypatch.setattr(demo,'demo_service',lambda conn,ident,lock=False:{
-        'id':SERVICE,'vehicle_id':SERVICE
+        'id':SERVICE,'vehicle_id':SERVICE,'vehicle_class':'bus'
     })
     queries=[]
     def one(conn,sql,args=()):
@@ -57,22 +61,44 @@ def test_demo_booking_no_real_hold_or_payment(monkeypatch):
     assert result['status']=='demo_booked'
     assert any('INSERT INTO app.demo_bookings' in x for x in queries)
     assert not any('app.reservations' in x or 'app.payment_attempts' in x for x in queries)
+    insert=next(x for x in queries if 'INSERT INTO app.demo_bookings' in x)
+    assert 'estimated_total_bdt' in insert and 'payment_method' in insert
+    assert result['status']=='demo_booked'
 
 
 def test_duplicate_idempotency_key_cannot_mutate_booking(monkeypatch):
     monkeypatch.setattr(demo,'demo_period',lambda start,months:date(2026,12,16))
     monkeypatch.setattr(demo,'demo_service',lambda conn,ident,lock=False:{
-        'vehicle_id':SERVICE
+        'vehicle_id':SERVICE,'vehicle_class':'bus'
     })
     existing={'service_id':SERVICE,'seat_id':SEAT,'starts_on':date(2026,11,16),
               'ends_before':date(2026,12,16),'pickup_zone':'Uttara Sector 7',
-              'office_zone':'Banani','status':'demo_booked'}
+              'office_zone':'Banani','status':'demo_booked','payment_method':'bkash_demo'}
     monkeypatch.setattr(demo,'one',lambda conn,sql,args=():existing)
     assert demo.create_demo_booking(object(),USER,SERVICE,booking()) is existing
     from fastapi import HTTPException
     with pytest.raises(HTTPException) as exc:
         demo.create_demo_booking(object(),USER,SERVICE,booking(officeZone='Gulshan'))
     assert exc.value.status_code==409
+    with pytest.raises(HTTPException) as payment:
+        demo.create_demo_booking(object(),USER,SERVICE,booking(paymentMethod='card_demo'))
+    assert payment.value.status_code==409
+
+
+def test_demo_prices_follow_server_tariff_without_payment():
+    expected = {
+        1: (5000,20,4000),
+        3: (15000,25,11250),
+        6: (30000,30,21000),
+        12: (60000,35,39000),
+    }
+    for months,(base,discount,total) in expected.items():
+        fare=demo.demo_quote('bus',months)
+        assert fare['baseAmountBdt']==base
+        assert fare['discountPercent']==discount
+        assert fare['estimatedTotalBdt']==total
+        assert fare['amountChargedBdt']==0
+        assert fare['isIllustrative'] is True
 
 
 def test_demo_booking_rejects_same_pickup_and_dropoff(monkeypatch):
@@ -112,6 +138,8 @@ def test_demo_seat_endpoint_accepts_subscription_months_from_http_query(monkeypa
             params={'startDate':'2026-11-16','months':str(months)})
         assert result.status_code==200, result.json()
         assert result.json()['availableCount']==1
+        assert result.json()['farePreview']['estimatedTotalBdt']>0
+        assert result.json()['farePreview']['amountChargedBdt']==0
     invalid=client.get(f'/api/demo/services/{SERVICE}/seats',
         params={'startDate':'2026-11-16','months':'invalid'})
     assert invalid.status_code==422
