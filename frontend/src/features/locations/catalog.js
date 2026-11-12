@@ -275,6 +275,16 @@ const CATEGORY_LABELS = Object.freeze({
   map: ['Map location', 'মানচিত্রের স্থান'],
 });
 
+const POPULAR = Object.freeze({
+  banani:28, badda:26, 'bashundhara residential area':25,
+  banglamotor:23, baridhara:20, banasree:19, 'bailey road':17,
+  uttara:25, mirpur:23, dhanmondi:24, gulshan:23,
+  motijheel:22, mohakhali:20, farmgate:19, shahbag:18,
+  'kawran bazar':18, tejgaon:18, 'new market':17, 'kuril':17,
+  jatrabari:16, shayamoli:14, pallabi:15, airport:18,
+});
+const popularity=place=>POPULAR[normalizePlaceQuery(place.name)]||0;
+
 const BANGLA_DIGITS = '০১২৩৪৫৬৭৮৯';
 const LATIN_DIGITS = '0123456789';
 export const normalizePlaceQuery = text => String(text || '')
@@ -357,12 +367,13 @@ export function rankDhakaPlaces(query, places=dhakaPlaces, limit=8) {
       }
     }
     if(!score) continue;
+    score+=popularity(place);
     if(place.category==='area'||place.category==='corporate')score+=5;
     if(place.category==='stop'||place.category==='transit')score+=3;
     if(place.name.length<19) score+=3;
     result.push({place,score});
   }
-  result.sort((a,b)=>b.score-a.score || a.place.name.localeCompare(b.place.name));
+  result.sort((a,b)=>b.score-a.score || a.place.name.localeCompare(b.place.name,'en',{numeric:true}));
   return result.slice(0,limit).map(x=>x.place);
 }
 
@@ -389,7 +400,7 @@ export function mergeLocationSuggestions(query, {local=dhakaPlaces,approved=[],m
     const prefix=key.startsWith(q);
     const sourceBoost=place.source==='approved'?35:place.source==='map'?8:0;
     const exact=key===q?30:0;
-    scored.push({place,score:sourceBoost+exact+(prefix?20:0)+(name.length<20?3:0)});
+    scored.push({place,score:sourceBoost+exact+(prefix?20:0)+(name.length<20?3:0)+popularity(place)});
   }
   scored.sort((a,b)=>b.score-a.score||a.place.name.localeCompare(b.place.name));
   return scored.slice(0,limit).map(x=>x.place);
