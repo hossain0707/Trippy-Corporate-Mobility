@@ -11,3 +11,15 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Authentication: keep password visibility in-field and social sign-in accessible. */
+.auth-field{display:grid;gap:9px}
+.password-input{position:relative}
+.password-input input{padding-right:127px}
+.password-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;border-radius:7px;background:transparent;color:#3d5c48;font-size:11px;font-weight:800;padding:9px 7px;min-height:34px}
+.password-toggle:focus-visible{outline:2px solid #26734f;outline-offset:1px}
+.social-signin{display:flex;align-items:center;justify-content:center;gap:10px;min-height:45px;text-align:center}
+.social-glyph{font-family:Arial,sans-serif;font-weight:900;font-size:17px;line-height:1}
+.social-google .social-glyph{color:#4285f4}
+.social-facebook .social-glyph{color:#1877f2}
+@media(max-width:400px){.password-input input{padding-right:113px}.password-toggle{font-size:10px}}
