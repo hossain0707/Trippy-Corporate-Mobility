@@ -191,3 +191,139 @@
   .auth-intro { margin-bottom: 21px; }
   .auth-divider { margin: 20px 0 18px; }
 }
+
+
+/* Secure operations workspace: isolated from passenger search and booking. */
+.ops-security-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  grid-column: 1 / -1;
+  background: linear-gradient(125deg, #edf7ef, #fff 75%);
+  border: 1px solid #cce1d1;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+.ops-security-icon {
+  flex: 0 0 58px;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #deeee2;
+  font-size: 25px;
+}
+.ops-security-card h3 { font-size: 21px; margin: 0 0 7px; }
+.ops-security-card p {
+  max-width: 620px;
+  color: #647b6c;
+  font-size: 13px;
+  line-height: 1.75;
+  margin-bottom: 18px;
+}
+.ops-security-card .primary { padding: 14px 18px; }
+.ops-workspace-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 0 12px;
+  margin-top: 17px;
+  scrollbar-width: thin;
+  border-bottom: 1px solid #dbe8df;
+}
+.ops-workspace-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #697d70;
+  font-size: 12px;
+  font-weight: 800;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.ops-workspace-tab:hover { background: #ecf3ee; color: #214c38; }
+.ops-workspace-tab.active {
+  background: #e5f2e8;
+  border-color: #bfddc7;
+  color: #13583a;
+}
+.ops-workspace-tab:focus-visible { outline: 2px solid #2e8057; outline-offset: 2px; }
+.ops-workspace-panel { padding: 19px 0 10px; }
+.ops-workspace-description { color: #708575; font-size: 12px; line-height: 1.7; margin-bottom: 15px; }
+.ops-workspace-panel .ops-controls { grid-template-columns: repeat(2, minmax(0,1fr)); align-items: start; }
+.ops-workspace-panel .ops-controls > form {
+  border-radius: 15px;
+  border: 1px solid #dce9e0;
+  box-shadow: 0 5px 20px #153f2c0a;
+  min-width: 0;
+}
+.ops-workspace-panel .ops-controls > form:focus-within {
+  border-color: #afd3b9;
+  box-shadow: 0 4px 18px #13583814;
+}
+.ops-workspace-panel .ops-controls h4 { font-size: 14px; line-height: 1.45; color: #184c35; margin-bottom: 7px; }
+.ops-workspace-panel .ops-controls input,
+.ops-workspace-panel .ops-controls select,
+.ops-workspace-panel .ops-controls textarea { font-size: 13px; min-height: 42px; }
+.ops-workspace-panel .ops-controls textarea { min-height: 180px; }
+.ops-workspace-panel .ops-controls .primary { min-height: 42px; }
+.ops-workspace-panel .ops-controls input[type=checkbox] { min-height: unset; accent-color: #237353; }
+.ops-registry {
+  background: white;
+  border: 1px solid #dce9df;
+  border-radius: 15px;
+  padding: 18px 20px;
+  margin: 0 0 18px;
+}
+.ops-registry h4 { font-size: 14px; margin: 0 0 12px; }
+.ops-muted { font-size: 12px; color: #819283; line-height: 1.65; margin: 0; }
+.ops-registry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid #edf2ed;
+  padding: 12px 0;
+  font-size: 12px;
+}
+.ops-registry-row strong { color: #1e4734; font-size: 13px; }
+.ops-registry-row small { display: block; margin-top: 4px; color: #7d8d80; }
+.ops-status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #fff3e2;
+  color: #925b1f;
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.ops-status-active { background: #e7f4ea; color: #236c42; }
+.account-security-note {
+  padding: 14px 15px;
+  border: 1px solid #dfebe2;
+  border-radius: 10px;
+  background: #f7fbf7;
+  color: #52715b;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.account-security-note p { margin: 0 0 7px; font-weight: 850; }
+.account-identity-row { display: flex; align-items: center; gap: 9px; justify-content: space-between; flex-wrap: wrap; }
+.account-identity-row span { overflow-wrap: anywhere; }
+.account-identity-row .outline { padding: 7px 10px; font-size: 11px; flex: 0 0 auto; }
+@media(max-width:760px) {
+  .ops-workspace-panel .ops-controls { grid-template-columns: 1fr; }
+  .ops-security-card { padding: 22px; gap: 14px; }
+  .ops-security-icon { width: 43px; height: 43px; flex-basis: 43px; font-size: 20px; }
+}
+@media(max-width:430px) {
+  .ops-security-card { flex-direction: column; }
+  .ops-workspace-tab { padding: 11px 12px; font-size: 11px; }
+  .ops-registry { padding: 14px; }
+}
