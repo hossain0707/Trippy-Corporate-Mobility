@@ -458,3 +458,71 @@
   .demo-payment-options{grid-template-columns:1fr}
   .demo-fare-line,.demo-receipt-row{font-size:11px}
 }
+
+
+/* Dhaka citywide location finder — keyboard accessible and thumb friendly. */
+.location-field { display:flex; flex-direction:column; gap:9px; min-width:0; }
+.location-field > label { font-size:10px; font-weight:850; color:#5c7663; letter-spacing:.3px; }
+.location-combobox { position:relative; width:100%; min-width:0; }
+.search-grid .location-combobox > input { height:44px; width:100%; }
+.location-suggestions {
+  position:absolute;
+  left:0; right:0; top:calc(100% + 7px);
+  z-index:35;
+  background:#fff;
+  border:1px solid #d3e5d7;
+  border-radius:14px;
+  box-shadow:0 20px 50px #123a3028;
+  max-height:min(360px,55vh);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:5px;
+}
+.location-suggestions-header {
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:9px 10px 8px;border-bottom:1px solid #edf2ed;
+  font-size:11px;color:#234d37;
+}
+.location-suggestions-header span {font-size:10px;color:#7c9282;font-weight:650}
+.location-option {
+  display:flex;align-items:center;gap:11px;
+  padding:11px 10px;
+  border-radius:9px;
+  min-height:55px;
+  cursor:pointer;
+  outline:0;
+  color:#234e37;
+}
+.location-option + .location-option {border-top:1px solid #f0f4f0}
+.location-option:hover,.location-option.active {
+  background:#eaf5ec;
+}
+.location-option-label {display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.location-option-label strong {font-size:12px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.location-option-label small {font-size:10px;font-weight:600;color:#829087;line-height:1.35}
+.location-type-icon {
+  width:32px;height:32px;flex:0 0 32px;
+  display:grid;place-items:center;
+  border-radius:9px;background:#edf6ef;
+  color:#27714c;font-weight:900;font-size:15px;
+}
+.location-empty {padding:16px 12px;color:#7a8c80;font-size:12px;line-height:1.55}
+.location-attribution {
+  border-top:1px solid #e5ebe5;
+  padding:8px 10px;
+  font-size:9px;
+  color:#8e9d90;
+}
+.location-attribution a {color:#4b775c;text-decoration:underline}
+@media(max-width:760px){
+  .search-grid > :nth-child(-n+2){grid-column:1/-1}
+  .location-suggestions{max-height:min(300px,45vh)}
+  .location-option{min-height:57px;padding:10px}
+  .location-option-label strong{font-size:13px}
+  .search-grid .location-combobox>input{height:48px;font-size:14px}
+}
+@media(max-width:400px){
+  .search-grid > :nth-child(-n+2){grid-column:1/-1}
+  .location-suggestions{max-height:min(290px,43vh)}
+}
