@@ -281,6 +281,21 @@ const messages = {
   "Reserving your seat temporarily…": "আপনার আসন সাময়িকভাবে সংরক্ষণ করা হচ্ছে…",
   "Seat reserved temporarily · Complete payment": "আসন সাময়িকভাবে রাখা হয়েছে · পেমেন্ট সম্পন্ন করুন",
   "Your booking is confirmed only after successful payment verification. Unpaid seat holds expire automatically.": "পেমেন্ট সফলভাবে যাচাই হলে তবেই বুকিং নিশ্চিত হবে। অপরিশোধিত আসন স্বয়ংক্রিয়ভাবে মেয়াদোত্তীর্ণ হবে।",
+  // Bilingual Dhaka location search.
+  "Search in Dhaka, e.g. Uttara Sector 7": "ঢাকায় স্থান খুঁজুন, যেমন উত্তরা সেক্টর ৭",
+  "Search in Dhaka, e.g. Banani": "ঢাকায় স্থান খুঁজুন, যেমন বনানী",
+  "Dhaka location suggestions": "ঢাকার স্থানগুলোর পরামর্শ",
+  "Suggested locations": "প্রস্তাবিত স্থান",
+  "Keep typing, or try another spelling.": "আরও লিখুন অথবা অন্য বানান চেষ্টা করুন।",
+  "Popular stop": "পরিচিত স্টপ",
+  "Approved pickup stop": "অনুমোদিত ওঠার স্টপ",
+  "Transport hub": "পরিবহন কেন্দ্র",
+  "Office district": "অফিস এলাকা",
+  "Residential": "আবাসিক এলাকা",
+  "Landmark": "পরিচিত স্থান",
+  "Road": "সড়ক",
+  "Area": "এলাকা",
+  "Hospital": "হাসপাতাল",
 };
 
 export const language = localStorage.getItem('trippy-language') === 'bn' ? 'bn' : 'en';
