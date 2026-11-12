@@ -49,6 +49,10 @@ def services(pickup:str|None=None,office:str|None=None,vehicleClass:str|None=Non
             v.class AS vehicle_class,v.licensed_passenger_capacity,
             selected_pair.pickup_stop_id,selected_pair.dropoff_stop_id,
             selected_pair.pickup_stop_name,selected_pair.dropoff_stop_name,
+            board_m.planned_arrival::text AS morning_board_time,
+            arrive_m.planned_arrival::text AS morning_arrival_time,
+            board_e.planned_arrival::text AS evening_board_time,
+            arrive_e.planned_arrival::text AS evening_arrival_time,
             (SELECT COUNT(*)::int FROM app.vehicle_seats vs
               WHERE vs.vehicle_id=v.id AND vs.enabled) AS selectable_seats
           FROM app.services s
@@ -74,6 +78,14 @@ def services(pickup:str|None=None,office:str|None=None,vehicleClass:str|None=Non
                    OR z.zone ILIKE '%%'||%s||'%%')
             ORDER BY mp.stop_order,md.stop_order DESC LIMIT 1
           ) selected_pair ON TRUE
+          LEFT JOIN app.service_stop_times board_m ON board_m.service_id=s.id
+            AND board_m.direction='morning' AND board_m.stop_id=selected_pair.pickup_stop_id
+          LEFT JOIN app.service_stop_times arrive_m ON arrive_m.service_id=s.id
+            AND arrive_m.direction='morning' AND arrive_m.stop_id=selected_pair.dropoff_stop_id
+          LEFT JOIN app.service_stop_times board_e ON board_e.service_id=s.id
+            AND board_e.direction='evening' AND board_e.stop_id=selected_pair.dropoff_stop_id
+          LEFT JOIN app.service_stop_times arrive_e ON arrive_e.service_id=s.id
+            AND arrive_e.direction='evening' AND arrive_e.stop_id=selected_pair.pickup_stop_id
           WHERE s.active AND r.active AND v.active
             AND v.documents_verified AND v.seat_map_verified
             AND v.fitness_expires_on>=((now() AT TIME ZONE 'Asia/Dhaka')::date)
