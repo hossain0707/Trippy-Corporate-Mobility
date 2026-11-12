@@ -67,8 +67,10 @@ function routeCard(s){
     'Part of '+(s.route_name||s.home_zone+' → '+s.office_zone)+' corridor');
   const details=node('div',{className:'route-details'});
   details.append(
-    node('span',{},'☀ '+t('Morning pickup')+': '+formatTime(s.morning_departure)),
-    node('span',{},'☾ '+t('Evening return')+': '+formatTime(s.evening_departure)),
+    node('span',{},'☀ Board: '+formatTime(s.morning_board_time||s.morning_departure)+
+      (s.morning_arrival_time?' · Arrive '+formatTime(s.morning_arrival_time):'')),
+    node('span',{},'☾ Return: '+formatTime(s.evening_board_time||s.evening_departure)+
+      (s.evening_arrival_time?' · Home '+formatTime(s.evening_arrival_time):'')),
     node('span',{},s.code+' · '+localText(
       s.selectable_seats+' numbered passenger seats',
       s.selectable_seats.toLocaleString(locale)+'টি যাত্রী আসন'
