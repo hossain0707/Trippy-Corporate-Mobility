@@ -107,8 +107,8 @@ def test_same_seat_reused_on_adjacent_nonoverlapping_corridor_legs():
             assert reserve(ids[0],stops[0],stops[1],0,1,1,2)
             # B->C morning, C->B evening, both disjoint from previous rider
             assert reserve(ids[1],stops[1],stops[2],1,2,0,1)
-            with conn.transaction():
-                with pytest.raises(ExclusionViolation):
+            with pytest.raises(ExclusionViolation):
+                with conn.transaction():
                     reserve(ids[2],stops[0],stops[2],0,2,0,2)
 
 
@@ -157,8 +157,8 @@ def test_different_seat_occupancy_conflicts_if_evening_legs_overlap():
               VALUES(%s,%s,%s,%s,%s,%s,%s,1,5000,0,5000,now()+interval '10 minutes',%s,
                int4range(0,1,'[)'),int4range(0,2,'[)'))""",
               (users[0],*common,uuid4()))
-            with conn.transaction():
-                with pytest.raises(ExclusionViolation):
+            with pytest.raises(ExclusionViolation):
+                with conn.transaction():
                     cur.execute("""INSERT INTO app.reservations
                       (user_id,service_id,seat_id,pickup_stop_id,dropoff_stop_id,
                        starts_on,ends_before,months,base_amount_bdt,discount_percent,amount_bdt,
