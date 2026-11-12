@@ -1,33 +1,41 @@
 import {$,node,state,supabase,configured,api,showToast,showModal,closeModal} from '../../core/context.js';
 import {applyRoleNavigation} from '../../main.js';
 import {t} from '../../core/locale.js';
+import {enabledSocialProviders} from './providers.js';
 
 const retryMessage = 'Unable to complete this request. Please try again.';
 const redirectTo = new URL(import.meta.env.BASE_URL, location.origin).href;
-const providers = [
-  ['google', 'Continue with Google'],
-  ['facebook', 'Continue with Facebook'],
-  ['azure', 'Continue with Microsoft'],
-  ['apple', 'Continue with Apple'],
-].filter(([provider]) => (import.meta.env.VITE_SOCIAL_PROVIDERS || '').split(',').map(value => value.trim()).includes(provider));
+const providers = enabledSocialProviders(import.meta.env.VITE_SOCIAL_PROVIDERS);
+let nextFieldId = 0;
 
 const button = (label, type = 'button', className = 'outline') => node('button', {type, className}, label);
 
 function field(form, label, attributes, value = '') {
-  const wrap = node('label', {}, label);
-  const input = node('input', {required: '', ...attributes});
+  const id = 'auth-input-' + (++nextFieldId);
+  const wrap = node('div', {className: 'auth-field'});
+  const fieldLabel = node('label', {for: id}, label);
+  const input = node('input', {id, required: '', ...attributes});
   input.value = value;
-  wrap.append(input);
-  form.append(wrap);
+  wrap.append(fieldLabel);
   if (attributes.type === 'password') {
-    const toggle = button('👁 Show password');
+    const group = node('div', {className: 'password-input'});
+    const toggle = button('👁 ' + t('Show password'), 'button', 'password-toggle');
+    toggle.setAttribute('aria-label', t('Show password'));
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.setAttribute('aria-controls', id);
     toggle.onclick = () => {
-      const reveal = input.type === 'password';
-      input.type = reveal ? 'text' : 'password';
-      toggle.textContent = '👁 ' + t(reveal ? 'Hide password' : 'Show password');
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      toggle.textContent = '👁 ' + t(visible ? 'Hide password' : 'Show password');
+      toggle.setAttribute('aria-label', t(visible ? 'Hide password' : 'Show password'));
+      toggle.setAttribute('aria-pressed', String(visible));
     };
-    form.append(toggle);
+    group.append(input, toggle);
+    wrap.append(group);
+  } else {
+    wrap.append(input);
   }
+  form.append(wrap);
   return input;
 }
 
@@ -104,7 +112,9 @@ export function openLogin(onSuccess, mode = 'login') {
   }
   if (!recovery) {
     for (const [provider, label] of providers) {
-      const social = button(label);
+      const social = button(label, 'button', 'outline social-signin social-' + provider);
+      social.prepend(node('span', {className: 'social-glyph', 'aria-hidden': 'true'},
+        {google: 'G', facebook: 'f', azure: 'M', apple: '●'}[provider]));
       social.onclick = async () => {
         social.disabled = true;
         try {
