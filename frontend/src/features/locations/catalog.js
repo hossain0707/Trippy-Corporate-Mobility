@@ -281,7 +281,7 @@ export const normalizePlaceQuery = text => String(text || '')
   .normalize('NFKC').toLowerCase()
   .replace(/[০-৯]/g, char => LATIN_DIGITS[BANGLA_DIGITS.indexOf(char)])
   .replace(/[\u200c\u200d]/g, '')
-  .replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
+  .replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
 
 const rows = AREA_ROWS.trim().split('\n').map((row, index) => {
   const [name,bangla,category,zone,alias=''] = row.split('|');
