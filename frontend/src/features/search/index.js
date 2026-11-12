@@ -2,6 +2,7 @@ import {t,localText,locale} from '../../core/locale.js';
 import {$,node,state,configured,api,vehicleNames,formatBdt,formatTime} from '../../core/context.js';
 import {openSeats} from '../booking/index.js';
 import {demoCard} from '../demo/index.js';
+import {locationSearchTerm} from '../locations/index.js';
 export function getSearch(){const form=new FormData($('searchForm'));return {pickup:String(form.get('pickup')).trim(),office:String(form.get('office')).trim(),vehicleClass:String(form.get('vehicleClass')),startDate:String(form.get('startDate')),months:Number(form.get('months'))}}
 export async function loadRoutes(){
   const container=$('routeResults');
@@ -9,8 +10,14 @@ export async function loadRoutes(){
   container.replaceChildren(node('div',{className:'empty-message'},'Finding available rides…'));
   if(!configured){container.replaceChildren(node('div',{className:'empty-message'},'Ride search is temporarily unavailable. Please try again later.'));return}
   const q=getSearch(),params=new URLSearchParams();
-  if(q.pickup)params.set('pickup',q.pickup);
-  if(q.office)params.set('office',q.office);
+  // Preserve the complete selected place for display and demo itineraries.
+  // Match actual licensed routes by their broader operating zone when available.
+  const pickupInput=$('searchForm').elements.namedItem('pickup');
+  const officeInput=$('searchForm').elements.namedItem('office');
+  const pickupTerm=locationSearchTerm(pickupInput).trim();
+  const officeTerm=locationSearchTerm(officeInput).trim();
+  if(pickupTerm)params.set('pickup',pickupTerm);
+  if(officeTerm)params.set('office',officeTerm);
   if(q.vehicleClass)params.set('vehicleClass',q.vehicleClass);
   const [realResult,demoResult]=await Promise.allSettled([
     api('/api/services'+(params.size?'?'+params:'')),

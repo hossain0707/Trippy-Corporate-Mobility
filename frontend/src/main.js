@@ -8,6 +8,7 @@ import {stopDriverGPS,loadDriver} from './features/driver/index.js';
 import {loadOperations} from './features/admin/index.js';
 import {openPasswordUpdate,setAccount} from './features/auth/index.js';
 import {initializeLanguage} from './core/locale.js';
+import {initializeDhakaLocations} from './features/locations/index.js';
 import './features/demand/index.js';
 import './features/support/index.js';
 function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGPS();state.page=page;document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
@@ -61,4 +62,5 @@ export function applyRoleNavigation(){
 }
 
 initializeLanguage();
+initializeDhakaLocations();
 initialize();

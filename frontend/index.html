@@ -32,8 +32,8 @@
       <section class="content" id="pageSearch">
         <div class="section-head"><div><div class="eyebrow muted">PLAN YOUR COMMUTE</div><h2>Find your ride</h2></div></div>
         <form id="searchForm" class="search-grid">
-          <label>Pickup area<input name="pickup" placeholder="e.g. Uttara Sector 7" autocomplete="off" maxlength="100"/></label>
-          <label>Destination<input name="office" placeholder="e.g. Banani" autocomplete="off" maxlength="100"/></label>
+          <div class="location-field"><label for="pickupLocation">Pickup area</label><div class="location-combobox"><input id="pickupLocation" name="pickup" type="text" placeholder="Search in Dhaka, e.g. Uttara Sector 7" autocomplete="off" maxlength="100"/></div></div>
+          <div class="location-field"><label for="destinationLocation">Destination</label><div class="location-combobox"><input id="destinationLocation" name="office" type="text" placeholder="Search in Dhaka, e.g. Banani" autocomplete="off" maxlength="100"/></div></div>
           <label>Vehicle type<select name="vehicleClass"><option value="">All vehicle types</option><option value="bus">Bus</option><option value="hiace">Hiace</option><option value="car">Shared car</option></select></label>
           <label>Start date<input id="startDate" name="startDate" type="date" required/></label>
           <label>Subscription length<select id="months" name="months"><option value="1">1 month</option><option value="3">3 months · 25% off</option><option value="6">6 months · 30% off</option><option value="12">12 months · 35% off</option></select></label>
