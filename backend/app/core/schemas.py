@@ -27,6 +27,22 @@ class DemandRequest(Strict):
     homeZone: str = Field(min_length=2,max_length=100)
     officeZone: str = Field(min_length=2,max_length=100)
     vehicleClass: VehicleClass | None = None
+    requestKind: Literal['new_route','new_stop','more_seats'] = 'new_route'
+    preferredMorningTime: time | None = None
+    preferredEveningTime: time | None = None
+    notes: str | None = Field(default=None,max_length=500)
+
+class DemandReview(Strict):
+    status: Literal['open','contacted','offered','closed']
+    resolutionNote: str | None = Field(default=None,max_length=500)
+
+class ScheduledStop(Strict):
+    stopId: UUID
+    direction: Literal['morning','evening']
+    plannedArrival: time
+
+class ServiceTimetable(Strict):
+    stops: list[ScheduledStop] = Field(min_length=4,max_length=100)
 
 class ProfileUpdate(Strict):
     fullName: str = Field(min_length=2,max_length=120)
