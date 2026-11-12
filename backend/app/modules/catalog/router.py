@@ -8,6 +8,23 @@ from ..booking.pricing import end_date,MONTHLY
 
 router=APIRouter(prefix='/api',tags=['Route catalog'])
 
+
+@router.get('/locations/stops')
+def public_approved_stops(q: str = Query(min_length=2, max_length=80)):
+    """Public, *approved* stop names for autocomplete; never exposes draft stops."""
+    term = q.strip()
+    if len(term)<2:
+        return []
+    with connection() as conn:
+        return rows(conn, """SELECT id, name, zone, latitude, longitude
+            FROM app.stops
+            WHERE approved AND active
+              AND (name ILIKE '%%' || %s || '%%' OR zone ILIKE '%%' || %s || '%%')
+            ORDER BY
+              CASE WHEN lower(name) LIKE lower(%s) || '%%' THEN 0 ELSE 1 END,
+              name ASC
+            LIMIT 8""", (term,term,term))
+
 @router.get('/pricing')
 def pricing():
     return {'currency':'BDT','monthly':MONTHLY,'discounts':{'firstMonth':20,'threeMonths':25,'sixMonths':30,'twelveMonths':35},'stackable':False}
