@@ -21,6 +21,8 @@ const messages = {
   'Use mobile number': 'মোবাইল নম্বর ব্যবহার করুন',
   'Email address': 'ইমেইল ঠিকানা',
   'Password': 'পাসওয়ার্ড',
+  'Show password': 'পাসওয়ার্ড দেখুন',
+  'Hide password': 'পাসওয়ার্ড লুকান',
   'Forgot password?': 'পাসওয়ার্ড ভুলে গেছেন?',
   'Reset password': 'পাসওয়ার্ড পুনরুদ্ধার',
   'Set new password': 'নতুন পাসওয়ার্ড দিন',
