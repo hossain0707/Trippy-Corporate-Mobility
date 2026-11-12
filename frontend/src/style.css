@@ -885,3 +885,10 @@ footer{border-top:1px solid #d3e6d8;margin-top:20px}
 @media(prefers-reduced-motion:reduce){
   .route-card,.hero-cta,.primary{transition:none}
 }
+
+/* Distinguish a matching journey from the full vehicle operating corridor. */
+.route-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px}
+.route-match-badge{font-size:9px;font-weight:900;letter-spacing:.4px;color:#097b54;background:#dff8eb;border-radius:99px;padding:8px 10px}
+.route-corridor-context{font-size:11px;color:#668574;margin:-4px 0 0;line-height:1.45}
+.route-stop-note{border-left:3px solid #1db88b;background:#f4faf6;color:#5d7b69;padding:8px 12px;border-radius:0 8px 8px 0;font-size:10px;line-height:1.55;margin:2px 0}
+@media(max-width:500px){.route-card-top{gap:5px}.route-match-badge{font-size:8px;padding:7px 9px}}
