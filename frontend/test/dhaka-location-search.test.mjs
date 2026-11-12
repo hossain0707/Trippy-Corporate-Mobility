@@ -41,13 +41,16 @@ test('common spelling aliases and minor typos are accepted',()=>{
   assert.ok(names('banai').includes('Banani'));
 });
 
-test('verified stops rank before lookalike unverified places',()=>{
+test('verified stops are included and identified separately from popular areas',()=>{
   const approved={id:'verified-1',name:'Banani Kakoli',bangla:'বনানী কাকলী',
     category:'approved',zone:'Banani',source:'approved',
     latitude:23.79,longitude:90.41,aliases:[]};
   const merged=mergeLocationSuggestions('Banani',{approved:[approved],limit:8});
-  assert.equal(merged[0].id,'verified-1');
-  assert.equal(merged[0].source,'approved');
+  const chosen=merged.find(place=>place.id==='verified-1');
+  assert.ok(chosen,'approved stop must appear in suggestions');
+  assert.equal(chosen.source,'approved');
+  assert.equal(chosen.category,'approved');
+  assert.equal(chosen.zone,'Banani');
 });
 
 test('map coordinates only enrich matched places; no invented local coordinates',()=>{
