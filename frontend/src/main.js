@@ -18,6 +18,11 @@ function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGP
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+$('heroFindRide').onclick=()=>{
+  document.querySelector('#pageSearch')?.scrollIntoView({behavior:'smooth',block:'start'});
+  $('pickupLocation').focus({preventScroll:true});
+};
+$('heroSuggestRoute').onclick=()=>$('demandBtn').click();
 async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomorrow;$('startDate').min=dhakaDay();$('startDate').max=dhakaDay(60);
   if(new URLSearchParams(location.search).get('payment'))showToast('Payment processing. Check My passes after provider verification. A browser redirect alone never confirms a seat.');
   if (!configured) {
@@ -56,6 +61,7 @@ export function applyRoleNavigation(){
   const role=state.user?.role;
   $('driverNav').classList.toggle('hidden',role!=='driver');
   $('opsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
+  $('mobileOpsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
   if(!role||!['driver','admin','dispatcher'].includes(role)){
     if(['driver','ops'].includes(state.page))setPage('search');
   }

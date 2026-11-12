@@ -52,10 +52,41 @@ export async function loadRoutes(){
     console.warn('Demo catalog unavailable');
   }
 }
-function routeCard(s){const card=node('article',{className:'route-card'});const chip=node('span',{className:'vehicle-chip '+s.vehicle_class},vehicleNames[s.vehicle_class]);const title=node('h3',{},s.home_zone+' → '+s.office_zone);const details=node('div',{className:'route-details'});
-  details.append(node('span',{},'☀ '+t('Morning pickup')+': '+formatTime(s.morning_departure)),node('span',{},'☾ '+t('Evening return')+': '+formatTime(s.evening_departure)),node('span',{},s.code+' · '+localText(s.selectable_seats+' passenger seats', s.selectable_seats.toLocaleString(locale)+'টি যাত্রী আসন')));
-  const bottom=node('div',{className:'route-bottom'});const price=node('div');price.append(node('b',{},formatBdt({bus:5000,hiace:6500,car:8000}[s.vehicle_class])),node('small',{},'per month · before discounts'));
-  const button=node('button',{type:'button'},'Choose seat ↗');button.onclick=()=>openSeats(s);bottom.append(price,button);card.append(chip,title,details,bottom);return card;
+function routeCard(s){
+  const card=node('article',{className:'route-card'});
+  const top=node('div',{className:'route-card-top'});
+  top.append(
+    node('span',{className:'vehicle-chip '+s.vehicle_class},vehicleNames[s.vehicle_class]),
+    node('span',{className:'route-match-badge'},'✓ MATCHED CORRIDOR')
+  );
+  const journey=s.pickup_stop_name&&s.dropoff_stop_name
+    ?s.pickup_stop_name+' → '+s.dropoff_stop_name
+    :s.home_zone+' → '+s.office_zone;
+  const title=node('h3',{},journey);
+  const context=node('p',{className:'route-corridor-context'},
+    'Part of '+(s.route_name||s.home_zone+' → '+s.office_zone)+' corridor');
+  const details=node('div',{className:'route-details'});
+  details.append(
+    node('span',{},'☀ Board: '+formatTime(s.morning_board_time||s.morning_departure)+
+      (s.morning_arrival_time?' · Arrive '+formatTime(s.morning_arrival_time):'')),
+    node('span',{},'☾ Return: '+formatTime(s.evening_board_time||s.evening_departure)+
+      (s.evening_arrival_time?' · Home '+formatTime(s.evening_arrival_time):'')),
+    node('span',{},s.code+' · '+localText(
+      s.selectable_seats+' numbered passenger seats',
+      s.selectable_seats.toLocaleString(locale)+'টি যাত্রী আসন'
+    ))
+  );
+  const note=node('p',{className:'route-stop-note'},
+    'Select your approved boarding and drop-off stops to check seats for just your journey.');
+  const bottom=node('div',{className:'route-bottom'});
+  const price=node('div');
+  price.append(node('b',{},formatBdt({bus:5000,hiace:6500,car:8000}[s.vehicle_class])),
+    node('small',{},'per month · before discounts'));
+  const button=node('button',{type:'button'},'Choose stops & seat ↗');
+  button.onclick=()=>openSeats(s);
+  bottom.append(price,button);
+  card.append(top,title,context,details,note,bottom);
+  return card;
 }
 $('searchForm').addEventListener('submit',e=>{e.preventDefault();loadRoutes()});
 
