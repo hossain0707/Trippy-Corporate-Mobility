@@ -402,3 +402,59 @@
   .ops-demo-publish{grid-template-columns:1fr}
   .demo-service-footer .primary{width:100%}
 }
+
+/* Guided booking simulation — styled like checkout but never accepts payment credentials. */
+.demo-service-price{display:flex;flex-direction:column;gap:5px}
+.demo-service-price strong{font-size:13px;color:#254b37}
+.demo-service-price span{font-size:11px;color:#788b7c;font-weight:600}
+.demo-progress{display:flex;gap:8px;margin:0 0 15px;flex-wrap:wrap}
+.demo-progress-step{
+  display:inline-flex;align-items:center;padding:7px 11px;border-radius:20px;
+  background:#f1f3f0;color:#8a998d;border:1px solid #e6ece5;
+  font-size:10px;font-weight:800
+}
+.demo-progress-step.active{background:#e2f2e8;color:#1c7043;border-color:#a9d7b8}
+.demo-checkout-step{display:grid;gap:12px}
+.demo-checkout-title{margin:2px 0 0;font-size:19px;letter-spacing:-.5px;color:#1d4432}
+.demo-itinerary{background:#f6faf6;border:1px solid #dbeadd;border-radius:13px;padding:15px 17px}
+.demo-itinerary strong{color:#1b5035;font-size:14px}
+.demo-itinerary p{margin:8px 0 0;color:#637b69;font-size:12px;line-height:1.45}
+.demo-fare-card{border:1px solid #dfebe0;border-radius:13px;background:white;padding:16px 18px}
+.demo-fare-card h4,.demo-pay-title{margin:0 0 12px;font-size:14px;color:#204a34}
+.demo-fare-line,.demo-receipt-row{display:flex;gap:12px;align-items:baseline;justify-content:space-between;padding:10px 0;font-size:12px;border-bottom:1px solid #edf1ed}
+.demo-fare-line span,.demo-receipt-row span{color:#65786c}
+.demo-fare-line strong,.demo-receipt-row strong{text-align:right;color:#264a36;font-weight:800}
+.demo-fare-estimate{margin-top:5px;border-top:2px solid #d2e3d6;font-weight:800}
+.demo-fare-free{border:0;background:#ebf6ed;padding:11px 10px;border-radius:9px}
+.demo-fare-free strong{font-size:18px;color:#177143}
+.demo-disclaimer{color:#7b6950;font-size:11px;line-height:1.6;margin:8px 0 3px}
+.demo-payment-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.demo-payment-option{
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  padding:13px 12px;border:1px solid #d8e4da;border-radius:11px;
+  background:#fff;transition:border-color .15s,background .15s
+}
+.demo-payment-option:hover,.demo-payment-option.selected{border-color:#4f9e6b;background:#f1f8f2}
+.demo-payment-option:focus-within{outline:2px solid #4f9e6b;outline-offset:2px}
+.demo-payment-option input{width:17px;height:17px;accent-color:#267e52;flex:0 0 17px}
+.demo-payment-option span{display:grid;gap:5px}
+.demo-payment-option strong{font-size:12px;color:#244938}
+.demo-payment-option small{font-size:10px;color:#799181}
+.demo-acknowledgement{
+  display:flex;align-items:flex-start;gap:11px;background:#fff7e9;
+  border:1px solid #ead7b7;border-radius:10px;padding:12px 13px;
+  font-size:11px;color:#785e36;line-height:1.6;cursor:pointer
+}
+.demo-acknowledgement input{flex:0 0 17px;width:17px;height:17px;margin:1px 0 0;accent-color:#247a4a}
+.demo-checkout-step .modal-actions{margin-top:5px}
+.demo-receipt{display:grid;gap:15px}
+.demo-receipt h3{font-size:23px;color:#1b4732;margin:0}
+.demo-receipt-details{border:1px solid #dce8dd;border-radius:12px;padding:8px 15px;background:#fff}
+.demo-receipt-row:last-child{border:0}
+.demo-receipt-row:nth-last-child(1){background:#f0f7f1;border-radius:6px;padding:11px}
+.demo-pass-pricing,.demo-pass-payment{font-size:11px!important;color:#536e58!important;line-height:1.6!important;margin:7px 0 0!important}
+@media(max-width:600px){
+  .demo-progress-step{font-size:9px;padding:6px 8px}
+  .demo-payment-options{grid-template-columns:1fr}
+  .demo-fare-line,.demo-receipt-row{font-size:11px}
+}
