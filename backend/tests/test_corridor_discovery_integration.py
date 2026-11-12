@@ -72,6 +72,8 @@ def test_intermediate_corridor_discovery_and_seat_reuse(monkeypatch):
     assert match['route_name']=='Abdullahpur to Motijheel'
     assert match['pickup_stop_id']==stop_ids[1]
     assert match['dropoff_stop_id']==stop_ids[2]
+    assert match['morning_board_time'].startswith('07:45')
+    assert match['evening_board_time'].startswith('18:30')
     assert not any(r['id']==service for r in
       catalog.services(pickup='Motijheel',office='Abdullahpur'))
     assert not any(r['id']==service for r in
