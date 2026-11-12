@@ -110,7 +110,11 @@ export function mountLocationAutocomplete(input){
   const choice=place=>{
     input.value=getUiLanguage()==='bn' && place.bangla ? place.bangla : place.name;
     input.dataset.selectedName=input.value;
-    input.dataset.searchZone=place.zone||place.name;
+    // Keep named residential sectors and neighborhoods precise. Roads, landmarks
+    // and stops can search the broader corridor; neither grants boarding rights.
+    const broaderZone=['road','landmark','hospital','stop','transit','approved','map']
+      .includes(place.category);
+    input.dataset.searchZone=(broaderZone && place.zone)?place.zone:place.name;
     if(Number.isFinite(place.latitude)&&Number.isFinite(place.longitude)){
       input.dataset.latitude=String(place.latitude);
       input.dataset.longitude=String(place.longitude);
