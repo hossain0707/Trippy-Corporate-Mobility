@@ -10,6 +10,30 @@ let nextFieldId = 0;
 
 const button = (label, type = 'button', className = 'outline') => node('button', {type, className}, label);
 
+// Icons are rendered as SVG elements, not font glyphs or password-field emoji.
+function passwordIcon(revealed) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  for (const [key, value] of Object.entries({
+    viewBox: '0 0 24 24', width: '19', height: '19', fill: 'none',
+    stroke: 'currentColor', 'stroke-width': '1.8',
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true',
+  })) svg.setAttribute(key, value);
+  const outline = document.createElementNS(ns, 'path');
+  outline.setAttribute('d', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z');
+  const pupil = document.createElementNS(ns, 'circle');
+  pupil.setAttribute('cx', '12');
+  pupil.setAttribute('cy', '12');
+  pupil.setAttribute('r', '3');
+  svg.append(outline, pupil);
+  if (revealed) {
+    const slash = document.createElementNS(ns, 'path');
+    slash.setAttribute('d', 'M3 3 21 21');
+    svg.append(slash);
+  }
+  return svg;
+}
+
 function field(form, label, attributes, value = '') {
   const id = 'auth-input-' + (++nextFieldId);
   const wrap = node('div', {className: 'auth-field'});
@@ -19,16 +43,20 @@ function field(form, label, attributes, value = '') {
   wrap.append(fieldLabel);
   if (attributes.type === 'password') {
     const group = node('div', {className: 'password-input'});
-    const toggle = button('👁 ' + t('Show password'), 'button', 'password-toggle');
-    toggle.setAttribute('aria-label', t('Show password'));
-    toggle.setAttribute('aria-pressed', 'false');
+    const toggle = button('', 'button', 'password-toggle');
+    const updateToggle = revealed => {
+      const text = t(revealed ? 'Hide password' : 'Show password');
+      toggle.setAttribute('aria-label', text);
+      toggle.setAttribute('title', text);
+      toggle.setAttribute('aria-pressed', String(revealed));
+      toggle.replaceChildren(passwordIcon(revealed));
+    };
     toggle.setAttribute('aria-controls', id);
+    updateToggle(false);
     toggle.onclick = () => {
-      const visible = input.type === 'password';
-      input.type = visible ? 'text' : 'password';
-      toggle.textContent = '👁 ' + t(visible ? 'Hide password' : 'Show password');
-      toggle.setAttribute('aria-label', t(visible ? 'Hide password' : 'Show password'));
-      toggle.setAttribute('aria-pressed', String(visible));
+      const revealed = input.type === 'password';
+      input.type = revealed ? 'text' : 'password';
+      updateToggle(revealed);
     };
     group.append(input, toggle);
     wrap.append(group);
@@ -72,13 +100,70 @@ export function openLogin(onSuccess, mode = 'login') {
   const login = mode === 'login';
   const recovery = mode === 'reset';
   const title = login ? 'Sign in' : recovery ? 'Reset password' : 'Create account';
-  showModal(title, 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
-  const email = field(form, 'Email address', {type: 'email', autocomplete: 'email'});
+  showModal(title, 'Trippy Corporate', {variant: 'auth'});
+
+  const content = $('modalContent');
+  const intro = login
+    ? 'Welcome back. Sign in to manage your daily commute.'
+    : recovery
+      ? 'Enter your email and we will send you a password reset link.'
+      : 'Get started with a secure account for your daily commute.';
+  content.append(node('p', {className: 'auth-intro'}, intro));
+
+  if (!recovery && providers.length) {
+    const options = node('div', {className: 'auth-social-options'});
+    for (const [provider, label] of providers) {
+      const social = button('', 'button', 'social-signin social-' + provider);
+      if (provider === 'google') {
+        // Google's official multicolor Super G asset; preserve the logo unchanged.
+        social.append(node('img', {
+          className: 'social-google-icon',
+          src: 'https://developers.google.com/static/identity/images/g-logo.png',
+          width: '20', height: '20', alt: '', 'aria-hidden': 'true',
+        }));
+      } else {
+        social.append(node('span', {className: 'social-glyph', 'aria-hidden': 'true'},
+          {facebook: 'f', azure: 'M', apple: '●'}[provider]));
+      }
+      social.append(node('span', {className: 'social-label'}, label));
+      social.onclick = async () => {
+        social.disabled = true;
+        try {
+          const {error} = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {redirectTo, ...(provider === 'azure' ? {scopes: 'email'} : {})},
+          });
+          if (error) throw error;
+        } catch {
+          social.disabled = false;
+          showToast(retryMessage);
+        }
+      };
+      options.append(social);
+    }
+    content.append(options);
+    const divider = node('div', {className: 'auth-divider', role: 'separator'});
+    divider.append(node('span', {}, 'or continue with email'));
+    content.append(divider);
+  }
+
+  const form = node('form', {className: 'form-stack auth-form'});
+  const email = field(form, 'Email address', {type: 'email', autocomplete: 'email', placeholder: 'name@example.com'});
   const password = recovery ? null : field(form, 'Password', {
     type: 'password', autocomplete: login ? 'current-password' : 'new-password',
     minlength: login ? '1' : '12', maxlength: '72',
   });
+
+  if (login) {
+    const forgot = node('div', {className: 'auth-forgot'});
+    const reset = button('Forgot password?', 'button', 'auth-text-button');
+    reset.onclick = () => openLogin(onSuccess, 'reset');
+    forgot.append(reset);
+    form.append(forgot);
+  } else if (!recovery) {
+    form.append(node('p', {className: 'auth-hint'}, 'Use at least 12 characters for your password.'));
+  }
+
   submit(form, recovery ? 'Send reset link' : title, async () => {
     if (recovery) {
       const {error} = await supabase.auth.resetPasswordForEmail(email.value.trim(), {redirectTo});
@@ -96,44 +181,30 @@ export function openLogin(onSuccess, mode = 'login') {
     showToast('Check your email to verify your account.');
     closeModal();
   }, login ? 'Unable to sign in. Check your details and try again.' : retryMessage);
+  content.append(form);
 
-  const changeMode = button(login ? 'Create account' : 'Sign in');
+  const footer = node('div', {className: 'auth-footer'});
+  const changeMode = button(
+    recovery ? 'Back to sign in' : login ? 'Create an account' : 'Sign in',
+    'button', 'auth-text-button',
+  );
   changeMode.onclick = () => openLogin(onSuccess, login ? 'signup' : 'login');
-  form.append(changeMode);
-  if (login) {
-    const reset = button('Forgot password?');
-    reset.onclick = () => openLogin(onSuccess, 'reset');
-    form.append(reset);
-    if (import.meta.env.VITE_PHONE_AUTH === 'true') {
-      const mobile = button('Use mobile number');
-      mobile.onclick = () => openPhoneVerification(false, onSuccess);
-      form.append(mobile);
-    }
-  }
   if (!recovery) {
-    for (const [provider, label] of providers) {
-      const social = button(label, 'button', 'outline social-signin social-' + provider);
-      social.prepend(node('span', {className: 'social-glyph', 'aria-hidden': 'true'},
-        {google: 'G', facebook: 'f', azure: 'M', apple: '●'}[provider]));
-      social.onclick = async () => {
-        social.disabled = true;
-        try {
-          const {error} = await supabase.auth.signInWithOAuth({provider, options: {redirectTo, ...(provider === 'azure' ? {scopes: 'email'} : {})}});
-          if (error) throw error;
-        } catch {
-          social.disabled = false;
-          showToast(retryMessage);
-        }
-      };
-      form.append(social);
-    }
+    footer.append(node('span', {}, login ? 'New to Trippy?' : 'Already have an account?'));
   }
-  $('modalContent').append(form);
+  footer.append(changeMode);
+  content.append(footer);
+
+  if (login && import.meta.env.VITE_PHONE_AUTH === 'true') {
+    const mobile = button('Use mobile number', 'button', 'auth-phone-link auth-text-button');
+    mobile.onclick = () => openPhoneVerification(false, onSuccess);
+    content.append(mobile);
+  }
 }
 
 function openPhoneVerification(link, onSuccess) {
-  showModal(link ? 'Verify mobile number' : 'Use mobile number', 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
+  showModal(link ? 'Verify mobile number' : 'Use mobile number', 'Trippy Corporate', {variant: 'auth'});
+  const form = node('form', {className: 'form-stack auth-form'});
   const phone = field(form, 'Mobile number', {type: 'tel', pattern: '\\+8801[0-9]{9}', placeholder: '+8801XXXXXXXXX', autocomplete: 'tel'});
   submit(form, 'Send verification code', async () => {
     const number = phone.value.trim();
@@ -155,8 +226,8 @@ function openPhoneVerification(link, onSuccess) {
 }
 
 export function openPasswordUpdate() {
-  showModal('Set new password', 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
+  showModal('Set new password', 'Trippy Corporate', {variant: 'auth'});
+  const form = node('form', {className: 'form-stack auth-form'});
   const password = field(form, 'Password', {type: 'password', autocomplete: 'new-password', minlength: '12', maxlength: '72'});
   submit(form, 'Set new password', async () => {
     const {error} = await supabase.auth.updateUser({password: password.value});

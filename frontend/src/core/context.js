@@ -12,8 +12,9 @@ export const node=(tag,attrs={},content)=>{const el=document.createElement(tag);
 export function dhakaDay(add=0){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const d=new Date(parts+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+add);return d.toISOString().slice(0,10)}
 export function showToast(message){const el=$('toast');el.textContent=t(message);el.classList.remove('hidden');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add('hidden'),5500)}
 let modalTrigger;
-export function showModal(title,kicker='BOOK YOUR COMMUTE') {
+export function showModal(title,kicker='BOOK YOUR COMMUTE',options={}) {
   const backdrop = $('modalBackdrop');
+  backdrop.querySelector('.modal').classList.toggle('modal--auth', options.variant === 'auth');
   if (backdrop.classList.contains('hidden')) modalTrigger = document.activeElement;
   $('modalTitle').textContent = t(title);
   $('modalKicker').textContent = t(kicker);
