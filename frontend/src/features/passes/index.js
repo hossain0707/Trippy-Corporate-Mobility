@@ -4,7 +4,7 @@ export async function loadPasses(){
   const el=$('passList');
   el.replaceChildren();
   if(!state.user){
-    el.append(node('div',{className:'empty-message'},'Please sign in first to view real passes and demo bookings.'));
+    el.append(node('div',{className:'empty-message'},'Sign in to view your bookings.'));
     return;
   }
   const [realResult,demoResult]=await Promise.allSettled([
@@ -13,12 +13,12 @@ export async function loadPasses(){
   ]);
   if(realResult.status==='fulfilled'){
     state.bookings=realResult.value;
-    if(state.bookings.length)el.append(node('h3',{className:'pass-group-title'},'Real reservations'));
+    if(state.bookings.length)el.append(node('h3',{className:'pass-group-title'},'Ride bookings'));
     for(const b of state.bookings){
       const card=node('article',{className:'pass-card'}),left=node('div');
       left.append(node('strong',{},b.code+' · Seat '+b.seat_label),
         node('p',{},b.pickup_stop+' ↔ '+b.dropoff_stop+' · '+b.starts_on+' to '+b.ends_before+' · '+formatBdt(b.amount_bdt)));
-      card.append(left,node('span',{className:'pill '+b.status},b.status.replace('_',' ')));
+      card.append(left,node('span',{className:'pill '+b.status},({confirmed:'Confirmed',held:'Payment pending',released:'Released',cancelled:'Cancelled'}[b.status]||b.status.replace('_',' '))));
       if(b.status==='held'){
         const release=node('button',{className:'outline',type:'button'},'Release unpaid seat');
         release.onclick=async()=>{
@@ -32,14 +32,14 @@ export async function loadPasses(){
       el.append(card);
     }
   }else{
-    el.append(node('div',{className:'error-note'},'Real passes unavailable: '+realResult.reason.message));
+    el.append(node('div',{className:'error-note'},'Your ride bookings are unavailable right now. Please try again.'));
   }
   if(demoResult.status==='fulfilled'){
     const items=demoResult.value;
     if(items.length){
       const label=node('div',{className:'demo-search-label'});
-      label.append(node('strong',{},'Demonstration bookings'),
-        node('span',{},'Practice only · no payment, travel service or real boarding pass'));
+      label.append(node('strong',{},'Demo bookings'),
+        node('span',{},'For demonstration only · No real ticket or payment'));
       el.append(label);
     }
     for(const b of items){
@@ -51,26 +51,26 @@ export async function loadPasses(){
       const discount=Number(b.discount_percent||0);
       const base=Number(b.estimated_base_amount_bdt||0);
       left.append(node('p',{className:'demo-pass-payment'},
-        'Practice receipt: DEMO-'+String(b.id).slice(0,8).toUpperCase()));
+        'Demo reference: DEMO-'+String(b.id).slice(0,8).toUpperCase()));
       if(b.payment_status==='simulated'){
         left.append(node('p',{className:'demo-pass-pricing'},
-          'Example base '+formatBdt(base)+' · '+discount+'% sample discount · Illustrative total '+formatBdt(estimated)));
+          'Plan '+formatBdt(base)+' · '+discount+'% sample discount · Estimated '+formatBdt(estimated)));
         left.append(node('p',{className:'demo-pass-payment'},
-          'Payment method: '+(paymentNames[b.payment_method]||'Simulation')+
-          ' · Status: Simulated (NOT paid) · Collected: ৳0'));
+          'Payment method: '+(paymentNames[b.payment_method]||'Demo')+
+          ' · Payment: Demo only · Charged: ৳0'));
       }else{
         left.append(node('p',{className:'demo-pass-payment'},
-          'Legacy demo booking · Payment was not processed · Collected: ৳0'));
+          'Earlier demo booking · No payment processed · Charged: ৳0'));
       }
-      left.append(node('small',{},'This is NOT a real transport ticket or payment receipt.'));
-      if(b.archived)left.append(node('small',{},'This demonstration service has been removed by an administrator.'));
+      left.append(node('small',{},'Demo only. Not valid for travel or as proof of payment.'));
+      if(b.archived)left.append(node('small',{},'This demo is no longer available for new bookings.'));
       card.append(left,node('span',{className:'demo-service-badge'},'DEMO BOOKED'));
       el.append(card);
     }
     if(!items.length&&!state.bookings.length&&realResult.status==='fulfilled'){
-      el.append(node('div',{className:'empty-message'},'No bookings yet. Search for a verified route or try the clearly labelled demo bus.'));
+      el.append(node('div',{className:'empty-message'},'No bookings yet. Find a ride or explore the demo.'));
     }
   }else{
-    el.append(node('p',{className:'error-note'},'Demo booking history is temporarily unavailable.'));
+    el.append(node('p',{className:'error-note'},'Demo bookings are temporarily unavailable. Please try again.'));
   }
 }
