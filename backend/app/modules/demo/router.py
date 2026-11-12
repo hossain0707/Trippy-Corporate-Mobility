@@ -94,7 +94,7 @@ def public_demo_services():
 
 
 @router.get("/demo/services/{service_id}/seats")
-def public_demo_seats(service_id: UUID, startDate: date, months: Duration = Query(1)):
+def public_demo_seats(service_id: UUID, startDate: date, months: int = Query(1, ge=1, le=12)):
     ends = demo_period(startDate, months)
     with connection() as conn:
         service = demo_service(conn, service_id)
