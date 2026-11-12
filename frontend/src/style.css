@@ -327,3 +327,78 @@
   .ops-workspace-tab { padding: 11px 12px; font-size: 11px; }
   .ops-registry { padding: 14px; }
 }
+
+/* Demo simulation — visibly distinct from verified, bookable routes. */
+.demo-search-label {
+  display:flex;align-items:baseline;justify-content:space-between;
+  flex-wrap:wrap;gap:5px 18px;margin:19px 0 10px;
+  color:#3b6850;font-size:12px;
+}
+.demo-search-label strong{font-size:16px;color:#244938;letter-spacing:-.3px}
+.demo-search-label span{color:#7a8679}
+.demo-service-card{
+  display:block;border:1px dashed #a6bda7;background:#f5faf4;
+  padding:19px 22px;box-shadow:none;
+}
+.demo-service-card-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px}
+.demo-service-badge{
+  display:inline-block;border:1px solid #d8c6a0;background:#fff1d6;color:#78531a;
+  border-radius:999px;padding:6px 10px;font-size:10px;letter-spacing:.25px;font-weight:900;
+  text-transform:uppercase;white-space:normal;
+}
+.demo-scope{color:#447a57;font-size:11px;font-weight:850}
+.demo-service-card h3{margin:12px 0 6px;font-size:20px}
+.demo-description{max-width:650px;margin:0;color:#52735b;font-size:12px;line-height:1.75}
+.demo-service-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+.demo-service-footer span{font-weight:800;font-size:12px;color:#3c6850}
+.demo-action{min-width:150px}
+.demo-modal-notice{border:1px solid #ecd6a7;background:#fff9ee;border-radius:12px;padding:15px 17px;margin-bottom:16px}
+.demo-modal-notice strong{font-size:14px;color:#70501c}
+.demo-modal-notice p{font-size:12px;line-height:1.65;margin:6px 0 0;color:#795f35}
+.demo-zone-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.demo-zone-fields label{font-size:11px;font-weight:850;display:grid;gap:7px;color:#43634c}
+.demo-zone-fields input{
+  height:43px;border:1px solid #cadccf;border-radius:9px;background:#fff;
+  color:#224a34;padding:0 11px;min-width:0;font-size:13px;
+}
+.demo-date-line{color:#64816c;font-size:12px;font-weight:700;margin:8px 0 14px}
+.demo-confirmation{display:grid;justify-items:start;gap:13px;padding:15px 4px}
+.demo-confirmation h3{font-size:23px;letter-spacing:-.7px;margin:0;color:#184b36}
+.demo-confirmation p{margin:0;line-height:1.75;font-size:13px;color:#607963}
+.demo-confirmation .primary{margin-top:8px}
+.demo-pass-card{background:#fbf8ed;border:1px solid #e8d9b6}
+.demo-pass-card small{display:block;font-size:11px;color:#7b673c;margin-top:6px}
+.pass-group-title{margin:15px 0 7px;color:#204d37;font-size:15px}
+.ops-demo-management{
+  padding:23px;border:1px solid #d8e3d8;background:#f8fbf6;
+  border-radius:17px;margin:22px 0;display:grid;gap:11px;
+}
+.ops-demo-management h3{font-size:18px;margin:0;color:#194e36}
+.ops-demo-management .helper-copy{margin:0 0 7px;line-height:1.6}
+.ops-demo-list{display:grid;gap:10px}
+.ops-demo-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:white;border:1px solid #dce8da;border-radius:12px;padding:17px;
+}
+.ops-demo-row strong{font-size:14px;color:#244b35}
+.ops-demo-row p{color:#708776;font-size:11px;margin:6px 0 10px}
+.ops-demo-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ops-demo-actions button{font-size:11px;padding:10px 13px;border-radius:9px}
+.ops-demo-remove{color:#9d4a40;border-color:#e8c6c2}
+.ops-demo-remove:hover{background:#fff0ee}
+.ops-demo-publish{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;
+  align-items:end;border:1px solid #d8e7d6;background:#fff;
+  border-radius:12px;padding:17px;margin-top:5px;
+}
+.ops-demo-publish h4,.ops-demo-publish p{grid-column:1/-1;margin:0}
+.ops-demo-publish h4{font-size:14px;color:#254d39}
+.ops-demo-publish label{display:grid;gap:7px;color:#4f6c56;font-size:11px;font-weight:800}
+.ops-demo-publish input,.ops-demo-publish select{width:100%;padding:10px;min-height:42px;border:1px solid #cbdccb;border-radius:8px}
+.ops-demo-publish button{min-height:43px}
+@media(max-width:620px){
+  .demo-zone-fields{grid-template-columns:1fr}
+  .ops-demo-management{padding:15px}
+  .ops-demo-publish{grid-template-columns:1fr}
+  .demo-service-footer .primary{width:100%}
+}
