@@ -22,7 +22,7 @@
 6. Verify `SELECT count(*) FROM app.users WHERE role='admin';` returns **1**. You can also inspect the audit event `admin.bootstrap`. Never log or share a user's OAuth token or database password.
 7. Refresh TRIPPY (sign out and back in if needed), then open **Operations**. Follow **Set up / verify authenticator** to scan the QR code with an authenticator app, enter the six-digit code and establish an AAL2 session.
 
-**Important:** the initial bootstrap intentionally grants only the **first** admin. Subsequent roles are allocated by the admin-only staff controls; normal public users can never choose their own roles. Do not directly run UPDATE statements in production as a substitute for this audited process.
+**Important:** the initial bootstrap intentionally grants only the **first** admin. The existing admin-only staff controls can grant **driver** and **dispatcher** roles, but intentionally cannot create another admin. Adding further owners requires a separately audited procedure and is **not implemented** here; normal public users can never choose their own roles. Do not directly run UPDATE statements in production as a substitute for this audited process.
 
 **No dedicated admin password exists.** The verified account signs in with Google (or its configured Supabase method) and then its authenticator app.
 
