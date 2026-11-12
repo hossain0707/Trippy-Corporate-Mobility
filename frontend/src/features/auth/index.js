@@ -113,7 +113,7 @@ export function openLogin(onSuccess, mode = 'login') {
   if (!recovery && providers.length) {
     const options = node('div', {className: 'auth-social-options'});
     for (const [provider, label] of providers) {
-      const social = button(label, 'button', 'social-signin social-' + provider);
+      const social = button('', 'button', 'social-signin social-' + provider);
       if (provider === 'google') {
         // Google's official multicolor Super G asset; preserve the logo unchanged.
         social.append(node('img', {
