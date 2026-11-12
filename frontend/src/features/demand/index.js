@@ -1,24 +1,21 @@
 import {getSearch} from '../search/index.js';
-import {$,node,api,showToast,showModal,closeModal} from '../../core/context.js';
+import {$,node,state,api,showToast,showModal,closeModal} from '../../core/context.js';
 import {openLogin} from '../auth/index.js';
 
 function formField(labelText,name,type='text',required=false,value=''){
   const label=node('label',{},labelText);
-  const input=node('input',{name,type,maxlength:type==='text'?'100':undefined});
+  const input=node('input',{name,type,...(type==='text'?{maxlength:'100'}:{})});
   input.required=required;
   input.value=value;
   label.append(input);
   return {label,input};
 }
 $('demandBtn').onclick=()=>{
-  if(!window.__TRIPPY_DEMO_PUBLIC__ && false)return;
-  if(!$('demandBtn'))return;
-  showRequest();
+  if(!state.user)return openLogin(showForm);
+  showForm();
 };
 
-function showRequest(){
-  import('../auth/index.js').then(()=>{}).catch(()=>{});
-  const showForm=()=>{
+function showForm(){
     showModal('Tell us where you commute','REQUEST A ROUTE OR STOP');
     const body=$('modalContent');
     body.append(node('p',{className:'status-note'},
@@ -84,9 +81,4 @@ function showRequest(){
     };
     body.append(form);
   };
-  // Sign-in is required to avoid unaudited/spam demand records.
-  import('../../core/context.js').then(({state})=>{
-    if(!state.user)openLogin(showForm);
-    else showForm();
-  });
 }
