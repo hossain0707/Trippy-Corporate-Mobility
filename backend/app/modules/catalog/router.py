@@ -47,8 +47,8 @@ def services(pickup:str|None=None,office:str|None=None,vehicleClass:str|None=Non
         return rows(conn,'''SELECT s.id,s.code,s.morning_departure::text,s.evening_departure::text,
             r.name AS route_name,r.home_zone,r.office_zone,
             v.class AS vehicle_class,v.licensed_passenger_capacity,
-            match.pickup_stop_id,match.dropoff_stop_id,
-            match.pickup_stop_name,match.dropoff_stop_name,
+            selected_pair.pickup_stop_id,selected_pair.dropoff_stop_id,
+            selected_pair.pickup_stop_name,selected_pair.dropoff_stop_name,
             (SELECT COUNT(*)::int FROM app.vehicle_seats vs
               WHERE vs.vehicle_id=v.id AND vs.enabled) AS selectable_seats
           FROM app.services s
@@ -73,7 +73,7 @@ def services(pickup:str|None=None,office:str|None=None,vehicleClass:str|None=Non
               AND (%s::text IS NULL OR z.name ILIKE '%%'||%s||'%%'
                    OR z.zone ILIKE '%%'||%s||'%%')
             ORDER BY mp.stop_order,md.stop_order DESC LIMIT 1
-          ) match ON TRUE
+          ) selected_pair ON TRUE
           WHERE s.active AND r.active AND v.active
             AND v.documents_verified AND v.seat_map_verified
             AND v.fitness_expires_on>=((now() AT TIME ZONE 'Asia/Dhaka')::date)
