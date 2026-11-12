@@ -197,9 +197,9 @@ async function showReviewQueues(root,role){
   root.append(section);
   if(role==='admin'){
     const paymentSection=node('section',{className:'ops-section'});
-    paymentSection.append(node('h3',{},`Payment exceptions (${payments.length})`));
+    paymentSection.append(node('h3',{},`Payments requiring review (${payments.length})`));
     paymentSection.append(node('p',{className:'ops-help'},'These records require finance reconciliation and possible refunds. Never mark a payment paid without independent provider verification.'));
-    if(!payments.length)paymentSection.append(node('p',{},'No pending payment exceptions.'));
+    if(!payments.length)paymentSection.append(node('p',{},'No payments need review.'));
     for(const entry of payments){
       const row=node('div',{className:'pass-card'}),left=node('div');
       left.append(node('strong',{},`${entry.code} · ${entry.status}`),node('p',{},`${entry.merchant_tran_id} · ${entry.amount_bdt} BDT`));
