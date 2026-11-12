@@ -5,7 +5,7 @@ export const configured=Boolean(config.api&&config.authUrl&&config.key&&!config.
 export const supabase=configured?createClient(config.authUrl,config.key,{auth:{flowType:'pkce'}}):null;
 export const $=id=>document.getElementById(id);
 export const formatBdt=n=>'৳'+Number(n).toLocaleString(locale,{maximumFractionDigits:0});
-export const vehicleNames={bus:'Air-conditioned bus',hiace:'Comfort Hiace',car:'Shared private car'};
+export const vehicleNames={bus:'Bus',hiace:'Hiace',car:'Shared car'};
 export const durationLabels={1:'1 month',3:'3 months',6:'6 months',12:'12 months'};
 export const state={user:null,session:null,services:[],bookings:[],page:'search',selectedService:null,selectedSeat:null,bookingModal:null,trackingTimer:null,map:null,mapMarker:null,driverWatch:null,driverLastPing:0};
 export const node=(tag,attrs={},content)=>{const el=document.createElement(tag);for(const [k,v] of Object.entries(attrs)){if(k==='className')el.className=v;else if(k==='text')el.textContent=v;else if(k==='disabled')el.disabled=Boolean(v);else el.setAttribute(k,['aria-label','placeholder'].includes(k)?t(String(v)):String(v));}if(typeof content==='string')el.textContent=t(content);else if(content instanceof Node)el.append(content);return el};
@@ -54,11 +54,11 @@ document.addEventListener('keydown', event => {
   }
 });
 export async function api(path,{method='GET',json,auth=false}={}){
-  if(!configured)throw new Error('Live backend and verified login have not been configured. See setup instructions.');
+  if(!configured)throw new Error('Booking is temporarily unavailable. Please try again later.');
   const headers={};let body;
   if(json!==undefined){headers['content-type']='application/json';body=JSON.stringify(json)}
   if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers.authorization='Bearer '+data.session.access_token}
-  let res;try{res=await fetch(config.api+path,{method,headers,body,cache:'no-store'})}catch{throw new Error('Unable to reach Trippy API. Check the server connection.')}
+  let res;try{res=await fetch(config.api+path,{method,headers,body,cache:'no-store'})}catch{throw new Error('We couldn’t connect right now. Please try again.')}
   let parsed=null;try{parsed=await res.json()}catch{}
   if(!res.ok){
     const detail=parsed?.message??parsed?.detail;

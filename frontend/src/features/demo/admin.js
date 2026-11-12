@@ -3,13 +3,13 @@ import {node,api,showToast} from '../../core/context.js';
 
 export async function loadDemoManagement(container,vehicles,reload){
   container.replaceChildren();
-  container.append(node('h3',{},'Dhaka-wide demo services'));
+  container.append(node('h3',{},'Demo services'));
   container.append(node('p',{className:'helper-copy'},
-    'Publish a clearly labelled practice bus anywhere in Dhaka. Demo bookings cost ৳0, never enter payment or real reservations, and remain in history after a demo is removed.'));
+    'Manage demo rides across Dhaka. Practice bookings are separate from real trips and payments.'));
   const list=await api('/api/admin/demo/services',{auth:true});
   const current=list.filter(s=>!s.removed_at);
   const registry=node('div',{className:'ops-demo-list'});
-  if(!current.length)registry.append(node('div',{className:'empty-message'},'No demonstration services published. Publish the existing DEMO-BUS-001 below.'));
+  if(!current.length)registry.append(node('div',{className:'empty-message'},'No demo rides yet. Publish an eligible demo vehicle below.'));
   for(const s of current){
     const card=node('article',{className:'ops-demo-row'});
     const details=node('div');
@@ -18,7 +18,7 @@ export async function loadDemoManagement(container,vehicles,reload){
     const state=node('span',{className:'demo-service-badge'},s.is_published?'PUBLISHED DEMO':'HIDDEN DEMO');
     details.append(state);
     const actions=node('div',{className:'ops-demo-actions'});
-    const toggle=node('button',{type:'button',className:'outline'},s.is_published?'Hide from customers':'Publish demo');
+    const toggle=node('button',{type:'button',className:'outline'},s.is_published?'Hide demo':'Show demo');
     toggle.onclick=async()=>{
       toggle.disabled=true;
       try{
@@ -48,18 +48,18 @@ export async function loadDemoManagement(container,vehicles,reload){
     && !current.some(s=>s.vehicle_id===v.id));
   if(eligible.length){
     const form=node('form',{className:'ops-demo-publish'});
-    form.append(node('h4',{},'Publish an inactive demo vehicle'));
+    form.append(node('h4',{},'Add a demo ride'));
     const vehicleLabel=node('label',{},'Demo fleet vehicle');
     const select=node('select',{name:'demoVehicleId'});
     for(const v of eligible)select.append(node('option',{value:v.id},
       v.registration_no+' · '+v.class+' · '+v.mapped_seats+' seats'));
     vehicleLabel.append(select);
-    const nameLabel=node('label',{},'Visible demo service name');
+    const nameLabel=node('label',{},'Display name');
     const name=node('input',{name:'demoName',required:'',minlength:'4',maxlength:'80',value:'Demo Bus'});
     nameLabel.append(name);
-    const submit=node('button',{type:'submit',className:'primary'},'Publish demo across Dhaka');
+    const submit=node('button',{type:'submit',className:'primary'},'Publish across Dhaka');
     form.append(vehicleLabel,nameLabel,submit,
-      node('p',{className:'ops-help'},'Never certify this fictional vehicle as a real licensed operator. Publishing this simulation does not require real documents.'));
+      node('p',{className:'ops-help'},'Demo vehicles remain unverified and cannot be used for real bookings.'));
     form.onsubmit=async e=>{
       e.preventDefault();submit.disabled=true;
       try{

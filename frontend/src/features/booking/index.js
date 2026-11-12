@@ -8,7 +8,7 @@ function nearestOption(stops,position){let best=null;for(const s of stops){if(s.
 export async function openSeats(summary){
   const {startDate,months}=getSearch();if(!startDate)return showToast('Choose your subscription start date first.');
   let holdRequest;
-  showModal('Choose your exact seat');const body=$('modalContent');body.append(node('p',{className:'status-note'},'Loading verified seat inventory for your full subscription…'));
+  showModal('Choose your exact seat');const body=$('modalContent');body.append(node('p',{className:'status-note'},'Checking seat availability for your selected dates…'));
   try{
     const [details,availability]=await Promise.all([api(`/api/services/${summary.id}`),api(`/api/services/${summary.id}/seats?startDate=${encodeURIComponent(startDate)}&months=${months}`)]);
     state.selectedService=details;state.selectedSeat=null;body.replaceChildren();
@@ -17,7 +17,7 @@ export async function openSeats(summary){
     const evening=details.stops.filter(s=>s.direction==='evening');
     const eligibleHome=morning.filter(s=>evening.some(e=>e.id===s.id));
     const eligibleOffice=morning.filter(s=>evening.some(e=>e.id===s.id));
-    if(eligibleHome.length<2||eligibleOffice.length<2){body.append(node('p',{className:'error-note'},'Route stops must be verified for morning and evening journeys before reservations can begin.'));return}
+    if(eligibleHome.length<2||eligibleOffice.length<2){body.append(node('p',{className:'error-note'},'This route is not available for booking yet.'));return}
     const pickupSelect=node('select',{id:'pickupStop','aria-label':'Morning pickup stop'}),dropSelect=node('select',{id:'dropStop','aria-label':'Office drop-off stop'});
     selectOptions(pickupSelect,eligibleHome,eligibleHome[0].id);selectOptions(dropSelect,eligibleOffice,eligibleOffice[eligibleOffice.length-1].id);
     const stopFields=node('div',{className:'stop-fields'}),pickLabel=node('label',{},'MORNING PICKUP / EVENING DROP-OFF'),dropLabel=node('label',{},'OFFICE DROP-OFF / EVENING PICKUP');pickLabel.append(pickupSelect);dropLabel.append(dropSelect);stopFields.append(pickLabel,dropLabel);body.append(stopFields);
@@ -42,7 +42,7 @@ export async function openSeats(summary){
       if(!state.selectedSeat)return;
       const mp=morning.find(s=>s.id===pickupSelect.value),md=morning.find(s=>s.id===dropSelect.value),ep=evening.find(s=>s.id===pickupSelect.value),ed=evening.find(s=>s.id===dropSelect.value);
       if(!mp||!md||!ep||!ed||!(mp.stop_order<md.stop_order)||!(ed.stop_order<ep.stop_order))return showToast('Pickup must be before office in the morning and reversed in the evening');
-      submit.disabled=true;submit.textContent=t('Holding your chosen seat…');
+      submit.disabled=true;submit.textContent=t('Reserving your seat temporarily…');
       try{
         const selected = state.selectedSeat;
         const payload = {serviceId: details.id, seatId: selected.id, startDate, months, pickupStopId: mp.id, dropoffStopId: md.id};
@@ -54,12 +54,12 @@ export async function openSeats(summary){
     };
   }catch(e){body.replaceChildren(node('p',{className:'error-note'},e.message))}
 }
-async function showCheckout(held,seatLabel,summary){showModal('Seat held — complete payment','SECURE CHECKOUT');const body=$('modalContent');const box=node('div',{className:'summary-box'});
+async function showCheckout(held,seatLabel,summary){showModal('Seat reserved temporarily · Complete payment','SECURE CHECKOUT');const body=$('modalContent');const box=node('div',{className:'summary-box'});
   box.append(node('h3',{},`${summary.code} · Seat ${seatLabel}`),node('p',{},`Subscription: ${held.months} month(s). Seat held until ${new Date(held.holdExpiresAt).toLocaleString('en-BD',{timeZone:'Asia/Dhaka'})} Dhaka time.`));body.append(box);
   const line=(a,b)=>{const r=node('div',{className:'fare-line'});r.append(node('span',{},a),node('strong',{},b));return r};
   body.append(line('Plan price',formatBdt(held.baseAmountBdt)),line(`Savings (${held.discountPercent}%)`,formatBdt(held.baseAmountBdt-held.amountBdt)));
   const total=line('Total to pay',formatBdt(held.amountBdt));total.classList.add('total');body.append(total);
-  body.append(node('p',{className:'notice'},'The seat becomes valid only after the payment gateway verifies payment. An expired hold or suspicious transaction is never automatically confirmed.'));
+  body.append(node('p',{className:'notice'},'Your booking is confirmed only after successful payment verification. Unpaid seat holds expire automatically.'));
   const actions=node('div',{className:'modal-actions'}),back=node('button',{className:'outline',type:'button'},'Close'),pay=node('button',{className:'primary',type:'button'},'Proceed to secure payment ↗');
   back.onclick=closeModal;pay.onclick=async()=>{pay.disabled=true;pay.textContent=t('Connecting to payment provider…');try{const result=await api(`/api/reservations/${held.id}/checkout`,{method:'POST',auth:true});window.location.assign(result.checkoutUrl)}catch(e){showToast(e.message);pay.disabled=false;pay.textContent=t('Try opening payment')}};
   actions.append(back,pay);body.append(actions);

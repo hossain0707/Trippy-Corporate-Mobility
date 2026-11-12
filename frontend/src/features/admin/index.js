@@ -27,10 +27,10 @@ export async function loadOperations(){
   try{
     const [overview,requests,allServices,stops,vehicles,routes]=await Promise.all([
       api('/api/admin/overview',{auth:true}),api('/api/admin/demand',{auth:true}),api('/api/admin/services',{auth:true}),api('/api/admin/stops',{auth:true}),api('/api/admin/vehicles',{auth:true}),api('/api/admin/routes',{auth:true})]);
-    dashboard.replaceChildren(kpi('Active verified vehicles',overview.activeVehicles),kpi('Open passenger requests',overview.openRequests),kpi('Paid, confirmed subscriptions',overview.confirmedSubscriptions));
-    if(!requests.length)demand.append(node('div',{className:'empty-message'},'No pending demand requests.'));
+    dashboard.replaceChildren(kpi('Active vehicles',overview.activeVehicles),kpi('Open route requests',overview.openRequests),kpi('Confirmed paid bookings',overview.confirmedSubscriptions));
+    if(!requests.length)demand.append(node('div',{className:'empty-message'},'No pending route requests.'));
     for(const r of requests.slice(0,25)){const card=node('div',{className:'pass-card'}),left=node('div');left.append(node('strong',{},r.home_zone+' → '+r.office_zone),node('p',{},`${r.preferred_class||'Any vehicle'} · ${new Date(r.created_at).toLocaleDateString()}`));card.append(left,node('span',{className:'pill'},r.status));demand.append(card)}
-    if(!allServices.length)services.append(node('div',{className:'empty-message'},'No services have been registered.'));
+    if(!allServices.length)services.append(node('div',{className:'empty-message'},'No scheduled services yet.'));
     for(const s of allServices){const card=node('div',{className:'pass-card'}),left=node('div');left.append(node('strong',{},s.code),node('p',{},`${formatTime(s.morning_departure)} / ${formatTime(s.evening_departure)} · ${s.active?'ACTIVE':'INACTIVE'}`));
       const toggle=node('button',{className:'outline',type:'button'},s.active?'Pause service':'Activate service');
       toggle.onclick=async()=>{toggle.disabled=true;try{await api('/api/admin/services/'+s.id+'/activate',{method:'PATCH',auth:true,json:{active:!s.active}});showToast('Service state updated');loadOperations()}catch(e){showToast(e.message);toggle.disabled=false}};
@@ -43,20 +43,20 @@ export async function loadOperations(){
       });
       buildAdminForms(builder,{stops,vehicles,routes,allServices});
     }
-    showReviewQueues(builder,state.user.role).catch(e=>showToast('Review queue unavailable: '+e.message));
+    showReviewQueues(builder,state.user.role).catch(e=>showToast('Review items are temporarily unavailable. '+e.message));
   }catch(e){dashboard.replaceChildren(node('div',{className:'empty-message'},e.message))}
 }
 function buildAdminForms(root,{stops,vehicles,routes,allServices}){
-  root.append(node('h3',{},'Fleet operations workspace'));
+  root.append(node('h3',{},'Fleet management'));
   const help=node('p',{className:'helper-copy'},
-    'Register actual vehicles, approved stops, licensed drivers and schedules. New vehicles and services remain inactive until verified. All changes are audited.');
+    'Manage vehicles, pickup points, drivers and schedules. New services stay inactive until approved.');
   root.append(help);
 
   const definitions = [
-    ['fleet', 'Vehicles & seats', 'Register fleet, match each real cabin and verify documentation'],
-    ['routes', 'Stops & routes', 'Define approved pickup points and morning/evening corridors'],
-    ['schedule', 'Timetables', 'Schedule registered vehicles onto verified routes'],
-    ['staff', 'Drivers & roles', 'Approve staff identities, driving licences and assignments'],
+    ['fleet', 'Vehicles & seats', 'Register vehicles, review seat layouts and approve documents'],
+    ['routes', 'Stops & routes', 'Set pickup stops and morning/evening routes'],
+    ['schedule', 'Timetables', 'Assign vehicles and departure times to approved routes'],
+    ['staff', 'Drivers & roles', 'Manage driver access, licences and assignments'],
   ];
   const tabs = node('div', {className: 'ops-workspace-tabs', role: 'tablist', 'aria-label': 'Fleet management sections'});
   const workspace = node('div', {className: 'ops-workspace'});
@@ -102,9 +102,9 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
   if (!definitions.some(([key]) => key === activeWorkspaceTab)) activeWorkspaceTab = 'fleet';
 
   const registry = node('div', {className: 'ops-registry'});
-  registry.append(node('h4', {}, 'Fleet registry · '+vehicles.length+' vehicles'));
+  registry.append(node('h4', {}, 'Registered vehicles · '+vehicles.length));
   if (!vehicles.length) {
-    registry.append(node('p', {className:'ops-muted'}, 'No vehicles registered. Use Add vehicle + seats below to begin with a real, licensed vehicle.'));
+    registry.append(node('p', {className:'ops-muted'}, 'No vehicles registered yet. Add an approved vehicle to begin.'));
   }
   for (const vehicle of vehicles) {
     const row = node('div', {className: 'ops-registry-row'});
@@ -112,14 +112,14 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
     left.append(node('strong', {}, vehicle.registration_no));
     left.append(node('small', {}, vehicle.class.toUpperCase()+' · '+vehicle.mapped_seats+'/'+vehicle.licensed_passenger_capacity+' passenger seats'));
     const status = vehicle.active && vehicle.documents_verified && vehicle.seat_map_verified
-      ? 'Verified & active' : 'Inactive / awaiting verification';
+      ? 'Verified & active' : 'Pending verification';
     row.append(left, node('span', {className: 'ops-status'+(vehicle.active ? ' ops-status-active' : '')},status));
     registry.append(row);
   }
   panels.fleet.insertBefore(registry, groups.fleet);
   const routesRegistry = node('div', {className: 'ops-registry'});
-  routesRegistry.append(node('h4', {}, 'Saved corridors · '+routes.length));
-  if (!routes.length) routesRegistry.append(node('p', {className:'ops-muted'}, 'No routes registered yet. Start by approving boarding stops.'));
+  routesRegistry.append(node('h4', {}, 'Routes · '+routes.length));
+  if (!routes.length) routesRegistry.append(node('p', {className:'ops-muted'}, 'No routes yet. Add your pickup and drop-off stops to begin.'));
   for (const route of routes) {
     const row = node('div', {className: 'ops-registry-row'});
     row.append(node('strong', {}, route.home_zone+' → '+route.office_zone));
@@ -135,7 +135,7 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
   const stopSubmit=node('button',{className:'primary',type:'submit'},'Save boarding stop');stopForm.append(node('h4',{},'Register approved boarding stop'),stopName.wrap,stopZone.wrap,lat.wrap,lon.wrap,approved,stopSubmit);
   stopForm.onsubmit=async e=>{e.preventDefault();stopSubmit.disabled=true;try{await api('/api/admin/stops',{method:'POST',auth:true,json:{name:stopName.input.value,zone:stopZone.input.value,latitude:Number(lat.input.value),longitude:Number(lon.input.value),approved:approvedBox.checked}});showToast('Stop registered');loadOperations()}catch(e){showToast(e.message);stopSubmit.disabled=false}};groups.routes.append(stopForm);
   // 2. Fleet + actual seating layout. Initial template is NOT verified.
-  const vForm=node('form'),reg=field('Official registration number','registrationNo'),operator=field('Licensed operator name','operatorName'),klass=selectField('Vehicle class','vehicleClass',[['bus','Bus'],['hiace','Hiace'],['car','Shared private car']]),cap=field('Licensed passenger capacity','capacity','number','12');cap.input.min=1;cap.input.max=60;const fitness=field('Fitness certificate expiry','fitnessExpiresOn','date'),insurance=field('Passenger insurance expiry','insuranceExpiresOn','date');const vSubmit=node('button',{className:'primary',type:'submit'},'Register with seat-map draft');
+  const vForm=node('form'),reg=field('Official registration number','registrationNo'),operator=field('Licensed operator name','operatorName'),klass=selectField('Vehicle class','vehicleClass',[['bus','Bus'],['hiace','Hiace'],['car','Shared car']]),cap=field('Licensed passenger capacity','capacity','number','12');cap.input.min=1;cap.input.max=60;const fitness=field('Fitness certificate expiry','fitnessExpiresOn','date'),insurance=field('Passenger insurance expiry','insuranceExpiresOn','date');const vSubmit=node('button',{className:'primary',type:'submit'},'Register with seat-map draft');
   vForm.append(node('h4',{},'Register vehicle and draft seats'),reg.wrap,operator.wrap,klass.wrap,cap.wrap,fitness.wrap,insurance.wrap,node('p',{className:'ops-help'},'A draft 2+2 bus, 1+2 Hiace, or shared-car layout is created. After checking the actual vehicle, an admin must verify the map and documents before activation.'),vSubmit);
   vForm.onsubmit=async e=>{e.preventDefault();vSubmit.disabled=true;const vehicleClass=klass.input.value,n=Number(cap.input.value);if(vehicleClass==='car'&&n>4){vSubmit.disabled=false;return showToast('Use at most 4 passenger seats in this shared-car template')}const positions=seatPositions(vehicleClass,n);
     try{await api('/api/admin/vehicles',{method:'POST',auth:true,json:{registrationNo:reg.input.value,operatorName:operator.input.value,vehicleClass,licensedPassengerCapacity:n,fitnessExpiresOn:fitness.input.value||null,insuranceExpiresOn:insurance.input.value||null,seats:positions}});showToast('Vehicle saved as inactive, awaiting physical verification');loadOperations()}catch(e){showToast(e.message);vSubmit.disabled=false}};groups.fleet.append(vForm);
@@ -197,9 +197,9 @@ async function showReviewQueues(root,role){
   root.append(section);
   if(role==='admin'){
     const paymentSection=node('section',{className:'ops-section'});
-    paymentSection.append(node('h3',{},`Payment exceptions (${payments.length})`));
+    paymentSection.append(node('h3',{},`Payments requiring review (${payments.length})`));
     paymentSection.append(node('p',{className:'ops-help'},'These records require finance reconciliation and possible refunds. Never mark a payment paid without independent provider verification.'));
-    if(!payments.length)paymentSection.append(node('p',{},'No pending payment exceptions.'));
+    if(!payments.length)paymentSection.append(node('p',{},'No payments need review.'));
     for(const entry of payments){
       const row=node('div',{className:'pass-card'}),left=node('div');
       left.append(node('strong',{},`${entry.code} · ${entry.status}`),node('p',{},`${entry.merchant_tran_id} · ${entry.amount_bdt} BDT`));

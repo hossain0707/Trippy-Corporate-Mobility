@@ -4,10 +4,10 @@ import {seatLayout} from '../booking/seatMap.js';
 import {openLogin} from '../auth/index.js';
 
 const paymentMethods = [
-  ['bkash_demo','bKash','Mobile wallet · simulation'],
+  ['bkash_demo','bKash','Mobile wallet · demo'],
   ['nagad_demo','Nagad','Mobile wallet · simulation'],
-  ['card_demo','Debit / credit card','Card checkout · simulation'],
-  ['bank_demo','Bank transfer','Bank payment · simulation'],
+  ['card_demo','Debit / credit card','Card checkout · demo'],
+  ['bank_demo','Bank transfer','Bank transfer · demo'],
 ];
 export const paymentLabel = id => paymentMethods.find(([key])=>key===id)?.[1] || 'Not selected';
 
@@ -17,30 +17,30 @@ export function priceRows(container,fare) {
     item.append(node('span',{},label),node('strong',{},value));
     container.append(item);
   };
-  line('Monthly example rate',formatBdt(fare.monthlyRateBdt));
-  line('Base subscription price',formatBdt(fare.baseAmountBdt));
-  line('Example discount ('+fare.discountPercent+'%)','− '+formatBdt(fare.discountAmountBdt));
-  line('Illustrative fare after discount',formatBdt(fare.estimatedTotalBdt),'demo-fare-estimate');
-  line('Amount actually charged','৳0','demo-fare-free');
+  line('Monthly fare',formatBdt(fare.monthlyRateBdt));
+  line('Plan subtotal',formatBdt(fare.baseAmountBdt));
+  line('Sample discount ('+fare.discountPercent+'%)','− '+formatBdt(fare.discountAmountBdt));
+  line('Estimated total',formatBdt(fare.estimatedTotalBdt),'demo-fare-estimate');
+  line('Charged in demo','৳0','demo-fare-free');
   container.append(node('p',{className:'demo-disclaimer'},
-    'Illustrative pricing only. Promotions and eligibility for actual bookings may differ. No payment is processed.'));
+    'Sample fares only. Real discounts and eligibility may differ. No payment is collected.'));
 }
 
 export function demoCard(service,getSearch) {
   const card=node('article',{className:'route-card demo-service-card'});
   const top=node('div',{className:'demo-service-card-top'});
-  top.append(node('span',{className:'demo-service-badge'},'DEMO · NO REAL VEHICLE'),
-    node('span',{className:'demo-scope'},'Anywhere in Dhaka'));
+  top.append(node('span',{className:'demo-service-badge'},'DEMO · NOT A REAL TRIP'),
+    node('span',{className:'demo-scope'},'Try any Dhaka route'));
   card.append(top);
   card.append(node('h3',{},service.name));
   card.append(node('p',{className:'demo-description'},
-    'Explore a realistic seat booking, price estimate and simulated checkout. No payment or transport is provided.'));
+    'Try choosing a seat, reviewing the fare and checking out. No real trip or payment.'));
   const footer=node('div',{className:'demo-service-footer'});
   const info=node('div',{className:'demo-service-price'});
   info.append(node('strong',{},service.selectable_seats+' demo seats'),
-    node('span',{},'Sample pricing · ৳0 actually charged'));
+    node('span',{},'Sample fare · No payment'));
   footer.append(info);
-  const action=node('button',{className:'primary demo-action',type:'button'},'Try the demo checkout');
+  const action=node('button',{className:'primary demo-action',type:'button'},'Try demo booking');
   action.onclick=()=>openDemoSeats(service,getSearch);
   footer.append(action);
   card.append(footer);
@@ -52,9 +52,9 @@ export async function openDemoSeats(service,getSearch){
   state.selectedSeat=null;
   const idempotencyKey=crypto.randomUUID();
   let selectedSeat=null;
-  showModal('Practice a complete booking','DEMO ONLY · NO REAL TRANSPORT');
+  showModal('Demo booking','DEMO · NO REAL TRIP');
   const body=$('modalContent');
-  body.replaceChildren(node('p',{className:'status-note'},'Loading demonstration seat availability and pricing…'));
+  body.replaceChildren(node('p',{className:'status-note'},'Loading demo seats and fares…'));
 
   try{
     const availability=await api('/api/demo/services/'+encodeURIComponent(service.id)+'/seats?'
@@ -64,13 +64,13 @@ export async function openDemoSeats(service,getSearch){
     body.replaceChildren();
 
     const notice=node('div',{className:'demo-modal-notice'});
-    notice.append(node('strong',{},'Learning experience · no real booking or payment'),
-      node('p',{},'This demo illustrates a real booking, including fares and payment-method selection. You will never be asked for a PIN, OTP or card number.'));
+    notice.append(node('strong',{},'Demo booking · No payment'),
+      node('p',{},'Explore the checkout process safely. No real trip is booked, and no payment details are needed.'));
     body.append(notice);
 
     const stage=node('div',{className:'demo-progress','aria-label':'Booking steps'});
-    stage.append(node('span',{className:'demo-progress-step active'},'1 · Select seat'),
-      node('span',{className:'demo-progress-step'},'2 · Example checkout'),
+    stage.append(node('span',{className:'demo-progress-step active'},'1 · Choose seat'),
+      node('span',{className:'demo-progress-step'},'2 · Checkout'),
       node('span',{className:'demo-progress-step'},'3 · Receipt'));
     body.append(stage);
     const first=stage.children[0],second=stage.children[1],third=stage.children[2];
@@ -82,23 +82,23 @@ export async function openDemoSeats(service,getSearch){
       const input=node('input',{type:'text',maxlength:'100',minlength:'2',required:'',placeholder,autocomplete:'off'});
       input.value=value;wrap.append(input);zoneFields.append(wrap);return input;
     };
-    const pickup=zoneInput('Dhaka pickup area','e.g. Uttara Sector 7',q.pickup);
-    const office=zoneInput('Dhaka destination','e.g. Banani',q.office);
+    const pickup=zoneInput('Pickup area','e.g. Uttara Sector 7',q.pickup);
+    const office=zoneInput('Destination','e.g. Banani',q.office);
     seatStep.append(zoneFields);
     seatStep.append(node('p',{className:'demo-date-line'},
-      q.months+' month'+(q.months===1?'':'s')+' · Starts '+q.startDate+' · Example fares shown at checkout'));
+      q.months+' month'+(q.months===1?'':'s')+' · Starts '+q.startDate+' · Fare shown next'));
 
-    const hint=node('p',{className:'status-note'},'Select one available passenger seat.');
-    const continueButton=node('button',{type:'button',className:'primary',disabled:true},'Choose a seat to continue');
+    const hint=node('p',{className:'status-note'},'Select an available seat.');
+    const continueButton=node('button',{type:'button',className:'primary',disabled:true},'Select a seat to continue');
     seatLayout(seatStep,{vehicle_class:service.vehicle_class},availability,seat=>{
       selectedSeat=seat;
       continueButton.disabled=false;
       continueButton.textContent='Continue with seat '+seat.label+' →';
-      hint.textContent='Seat '+seat.label+' selected for this demonstration.';
+      hint.textContent='Seat '+seat.label+' selected.';
     });
     seatStep.append(hint);
     const seatActions=node('div',{className:'modal-actions'});
-    const cancel=node('button',{type:'button',className:'outline'},'Close demo');
+    const cancel=node('button',{type:'button',className:'outline'},'Close');
     cancel.onclick=closeModal;
     seatActions.append(cancel,continueButton);
     seatStep.append(seatActions);
@@ -111,40 +111,40 @@ export async function openDemoSeats(service,getSearch){
       if(!selectedSeat)return;
       const p=pickup.value.trim(),o=office.value.trim();
       if(p.length<2||o.length<2||p.toLocaleLowerCase()===o.toLocaleLowerCase()){
-        showToast('Enter two different Dhaka areas for this example itinerary.');return;
+        showToast('Choose different pickup and destination areas.');return;
       }
       first.classList.remove('active');second.classList.add('active');
       seatStep.classList.add('hidden');
       checkoutStep.classList.remove('hidden');
       checkoutStep.replaceChildren();
 
-      checkoutStep.append(node('h3',{className:'demo-checkout-title'},'Review your demo checkout'));
+      checkoutStep.append(node('h3',{className:'demo-checkout-title'},'Review demo booking'));
       const itinerary=node('div',{className:'demo-itinerary'});
       itinerary.append(node('strong',{},service.name+' · Seat '+selectedSeat.label),
         node('p',{},p+' → '+o),
-        node('p',{},q.startDate+' · '+q.months+'-month example subscription'));
+        node('p',{},q.startDate+' · '+q.months+'-month plan'));
       checkoutStep.append(itinerary);
 
       const priceCard=node('section',{className:'demo-fare-card'});
-      priceCard.append(node('h4',{},'Example fare breakdown'));
+      priceCard.append(node('h4',{},'Fare summary'));
       priceRows(priceCard,fare);
       checkoutStep.append(priceCard);
 
-      checkoutStep.append(node('h4',{className:'demo-pay-title'},'Choose a simulated payment method'));
+      checkoutStep.append(node('h4',{className:'demo-pay-title'},'Payment method (demo)'));
       checkoutStep.append(node('p',{className:'demo-disclaimer'},
-        'These options illustrate checkout only. No real bKash, Nagad, bank or card connection will be opened.'));
+        'Choose a method to preview checkout. No payment provider will open.'));
       const methods=node('div',{className:'demo-payment-options',role:'radiogroup','aria-label':'Simulated payment method'});
       let selectedMethod=null;
       const actions=node('div',{className:'modal-actions'});
       const back=node('button',{type:'button',className:'outline'},'← Edit seat');
-      const submit=node('button',{type:'button',className:'primary',disabled:true},'Complete simulated payment · ৳0');
+      const submit=node('button',{type:'button',className:'primary',disabled:true},'Complete demo booking · ৳0');
       back.onclick=()=>{
         checkoutStep.classList.add('hidden');seatStep.classList.remove('hidden');
         second.classList.remove('active');first.classList.add('active');
       };
       const acknowledgement=node('label',{className:'demo-acknowledgement'});
       const agree=node('input',{type:'checkbox'});
-      acknowledgement.append(agree,node('span',{},'I understand this is a simulation. No money is charged and no real seat is reserved.'));
+      acknowledgement.append(agree,node('span',{},'I understand this is a demo. No money is charged or real trip booked.'));
       const update=()=>{submit.disabled=!(selectedMethod&&agree.checked)};
       agree.onchange=update;
       for(const [key,label,subtitle] of paymentMethods){
@@ -172,7 +172,7 @@ export async function openDemoSeats(service,getSearch){
           openLogin(()=>openDemoSeats(service,getSearch));
           return;
         }
-        submit.disabled=true;submit.textContent='Saving your practice receipt…';
+        submit.disabled=true;submit.textContent='Saving demo booking…';
         try{
           const booking=await api('/api/demo/services/'+encodeURIComponent(service.id)+'/bookings',{
             method:'POST',auth:true,json:{
@@ -183,10 +183,10 @@ export async function openDemoSeats(service,getSearch){
           checkoutStep.classList.add('hidden');
           second.classList.remove('active');third.classList.add('active');
           const receipt=node('section',{className:'demo-receipt'});
-          receipt.append(node('span',{className:'demo-service-badge'},'DEMO BOOKED · SIMULATED PAYMENT'));
-          receipt.append(node('h3',{},'Your practice booking is complete'));
+          receipt.append(node('span',{className:'demo-service-badge'},'DEMO BOOKED · NO PAYMENT'));
+          receipt.append(node('h3',{},'Demo booking confirmed'));
           receipt.append(node('p',{className:'demo-disclaimer'},
-            'This is not a real transport ticket or payment receipt. No money has been collected.'));
+            'Demo only. Not valid for travel or as proof of payment. Charged: ৳0.'));
           const summary=node('div',{className:'demo-receipt-details'});
           const row=(label,value)=>{
             const el=node('div',{className:'demo-receipt-row'});
@@ -196,16 +196,16 @@ export async function openDemoSeats(service,getSearch){
           row('Route',p+' → '+o);
           row('Seat',selectedSeat.label);
           row('Period',q.startDate+' · '+q.months+' month'+(q.months===1?'':'s'));
-          row('Example fare',formatBdt(booking.estimated_total_bdt));
+          row('Sample fare',formatBdt(booking.estimated_total_bdt));
           row('Payment method',paymentLabel(booking.payment_method)+' (simulated)');
-          row('Payment status','Simulated — not paid');
+          row('Payment status','Demo only · Not paid');
           row('Amount charged','৳0');
           receipt.append(summary);
           const view=node('button',{type:'button',className:'primary'},'View in My passes');
           view.onclick=()=>{closeModal();document.querySelector('[data-page="passes"]')?.click()};
           receipt.append(view);
           body.append(receipt);
-          showToast('Demo Booked. No real charge or journey was created.');
+          showToast('Demo booking saved. No payment was made.');
         }catch(e){
           showToast(e.message);
           submit.disabled=false;submit.textContent='Complete simulated payment · ৳0';
