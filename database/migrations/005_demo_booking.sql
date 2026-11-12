@@ -41,4 +41,13 @@ CREATE INDEX IF NOT EXISTS demo_bookings_customer_history
 CREATE INDEX IF NOT EXISTS demo_bookings_service_history
   ON app.demo_bookings(service_id,created_at DESC);
 REVOKE ALL ON app.demo_services,app.demo_bookings FROM PUBLIC;
-REVOKE ALL ON app.demo_services,app.demo_bookings FROM anon,authenticated;
+DO $roles$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+    EXECUTE 'REVOKE ALL ON app.demo_services,app.demo_bookings FROM anon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+    EXECUTE 'REVOKE ALL ON app.demo_services,app.demo_bookings FROM authenticated';
+  END IF;
+END
+$roles$;
