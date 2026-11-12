@@ -377,6 +377,38 @@ export function rankDhakaPlaces(query, places=dhakaPlaces, limit=8) {
   return result.slice(0,limit).map(x=>x.place);
 }
 
+// Approximate Greater Dhaka search box, not a municipal boundary.
+export const DHAKA_BBOX=[90.25,23.63,90.57,23.96];
+
+export function mapFeaturesToSuggestions(features){
+  if(!Array.isArray(features))return [];
+  const [west,south,east,north]=DHAKA_BBOX;
+  return features.flatMap(feature=>{
+    const coords=feature.center || feature.geometry?.coordinates;
+    if(!Array.isArray(coords)||coords.length<2)return [];
+    const [longitude,latitude]=coords.map(Number);
+    if(!Number.isFinite(longitude)||!Number.isFinite(latitude) ||
+      longitude<west||longitude>east||latitude<south||latitude>north)return [];
+    const name=String(feature.text||feature.place_name?.split(',')[0]||'').trim().slice(0,110);
+    if(!name)return [];
+    const types=feature.place_type || [];
+    const category=types.includes('road')||types.includes('address')?'road':
+      types.includes('poi')?'landmark':'area';
+    const context=feature.context?.find(x=>['neighbourhood','place','locality'].some(t=>x.id?.startsWith(t)));
+    return [{
+      id:'map-'+String(feature.id||name),
+      name,
+      bangla:feature['text_bn'] || name,
+      category,
+      zone:String(context?.text||name),
+      aliases:[],
+      latitude,longitude,
+      source:'map',
+    }];
+  });
+}
+
+
 export function mergeLocationSuggestions(query, {local=dhakaPlaces,approved=[],mapped=[],limit=8}={}){
   const coordsByName=new Map(mapped
     .filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude))
