@@ -317,6 +317,23 @@ export const dhakaPlaces = Object.freeze(rows);
 export const categoryLabel = (category, lang='en') =>
   (CATEGORY_LABELS[category] || CATEGORY_LABELS.area)[lang === 'bn' ? 1 : 0];
 
+function editDistanceLimited(a,b,maxDistance){
+  if(Math.abs(a.length-b.length)>maxDistance)return maxDistance+1;
+  const previous=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const current=[i];
+    for(let j=1;j<=b.length;j++){
+      current[j]=Math.min(
+        current[j-1]+1,previous[j]+1,
+        previous[j-1]+(a[i-1]===b[j-1]?0:1)
+      );
+    }
+    if(Math.min(...current)>maxDistance)return maxDistance+1;
+    for(let j=0;j<current.length;j++)previous[j]=current[j];
+  }
+  return previous[b.length];
+}
+
 export function rankDhakaPlaces(query, places=dhakaPlaces, limit=8) {
   const q=normalizePlaceQuery(query);
   if(!q || q.length>100) return [];
@@ -330,6 +347,14 @@ export function rankDhakaPlaces(query, places=dhakaPlaces, limit=8) {
       else if(normalized.startsWith(q)) score=Math.max(score,112);
       else if(normalized.split(' ').some(x=>x.startsWith(q))) score=Math.max(score,85);
       else if(q.length>=3 && normalized.includes(q)) score=Math.max(score,57);
+      else if(q.length>=4){
+        // Slight spelling errors only; avoid noisy results for 1–3 characters.
+        const threshold=q.length>=7?2:1;
+        const candidates=normalized.split(' ').filter(t=>Math.abs(t.length-q.length)<=threshold);
+        if(candidates.some(token=>editDistanceLimited(q,token,threshold)<=threshold)){
+          score=Math.max(score,35);
+        }
+      }
     }
     if(!score) continue;
     if(place.category==='area'||place.category==='corporate')score+=5;
@@ -342,7 +367,14 @@ export function rankDhakaPlaces(query, places=dhakaPlaces, limit=8) {
 }
 
 export function mergeLocationSuggestions(query, {local=dhakaPlaces,approved=[],mapped=[],limit=8}={}){
-  const candidates=[...approved,...rankDhakaPlaces(query,local,15),...mapped];
+  const coordsByName=new Map(mapped
+    .filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude))
+    .map(p=>[normalizePlaceQuery(p.name),p]));
+  const enriched=rankDhakaPlaces(query,local,15).map(place=>{
+    const coordinates=coordsByName.get(normalizePlaceQuery(place.name));
+    return coordinates?{...place,latitude:coordinates.latitude,longitude:coordinates.longitude}:place;
+  });
+  const candidates=[...approved,...enriched,...mapped];
   const q=normalizePlaceQuery(query);
   const seen=new Set();
   const scored=[];
