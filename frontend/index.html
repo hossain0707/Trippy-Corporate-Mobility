@@ -23,14 +23,44 @@
     <main>
       <section class="hero" id="hero">
         <div class="hero-text">
-          <div class="eyebrow">Daily commutes in Dhaka</div>
-          <h1>Your commute, made simpler</h1>
-          <p>Find shared rides for your morning commute and evening journey home.</p>
-          <div class="hero-features"><span>Morning & evening rides</span><span>Choose your seat</span><span>Planned pickup stops</span></div>
+          <div class="hero-kicker"><span class="hero-spark">✦</span> BUILT FOR DHAKA'S DAILY COMMUTE</div>
+          <h1>One city.<span> Better journeys.</span></h1>
+          <p>Choose a seat on a planned route, travel between approved stops, or tell TRIPPY where you need to go next.</p>
+          <div class="hero-actions">
+            <button type="button" id="heroFindRide" class="hero-cta">Find my ride <span aria-hidden="true">↗</span></button>
+            <button type="button" id="heroSuggestRoute" class="hero-secondary">Request a route <span aria-hidden="true">→</span></button>
+          </div>
+          <div class="hero-features"><span>✧ Your seat, your route</span><span>◷ Morning & return</span><span>⌖ Stops along the corridor</span></div>
+        </div>
+        <div class="hero-visual" aria-label="Illustration of how a TRIPPY route connects multiple stops">
+          <div class="hero-visual-head"><span class="hero-visual-icon">t</span><span>HOW A CORRIDOR WORKS</span><span class="hero-visual-dot"></span></div>
+          <div class="hero-journey-title">One route. More places.</div>
+          <div class="hero-journey-subtitle">Illustrative journey · Not a live service</div>
+          <div class="hero-route-timeline" aria-hidden="true">
+            <div class="hero-route-line"></div>
+            <div class="hero-route-stop"><i></i><strong>Abdullahpur</strong><small>Start</small></div>
+            <div class="hero-route-stop"><i></i><strong>Uttara</strong><small>Board</small></div>
+            <div class="hero-route-stop"><i></i><strong>Banani</strong><small>Stop</small></div>
+            <div class="hero-route-stop"><i></i><strong>Motijheel</strong><small>End</small></div>
+          </div>
+          <div class="hero-route-foot">
+            <span>Each route has its own approved stops</span>
+            <span class="hero-route-symbol">↗</span>
+          </div>
         </div>
       </section>
       <section class="content" id="pageSearch">
-        <div class="section-head"><div><div class="eyebrow muted">PLAN YOUR COMMUTE</div><h2>Find your ride</h2></div></div>
+        <div class="booking-guide" aria-label="Booking steps">
+          <div><span class="booking-guide-num">01</span><strong>Choose locations</strong></div>
+          <span class="booking-guide-arrow">→</span>
+          <div><span class="booking-guide-num">02</span><strong>Find your corridor</strong></div>
+          <span class="booking-guide-arrow">→</span>
+          <div><span class="booking-guide-num">03</span><strong>Select a seat</strong></div>
+          <span class="booking-guide-arrow">→</span>
+          <div><span class="booking-guide-num">04</span><strong>Book securely</strong></div>
+        </div>
+        <div class="section-head"><div><div class="eyebrow muted">YOUR DAILY ROUTE</div><h2>Where are you headed?</h2></div>
+          <span class="section-note">Find any two stops on an available corridor</span></div>
         <form id="searchForm" class="search-grid">
           <div class="location-field"><label for="pickupLocation">Pickup area</label><div class="location-combobox"><input id="pickupLocation" name="pickup" type="text" placeholder="Search in Dhaka, e.g. Uttara Sector 7" autocomplete="off" maxlength="100"/></div></div>
           <div class="location-field"><label for="destinationLocation">Destination</label><div class="location-combobox"><input id="destinationLocation" name="office" type="text" placeholder="Search in Dhaka, e.g. Banani" autocomplete="off" maxlength="100"/></div></div>
@@ -41,14 +71,20 @@
         </form>
         <div class="section-head gap-top"><div><div class="eyebrow muted">ROUTES & VEHICLES</div><h2>Available rides</h2></div><span id="resultCount" class="section-note" aria-live="polite"></span></div>
         <div id="routeResults" class="route-grid" aria-live="polite"><div class="empty-message">Finding available rides…</div></div>
-        <div class="help-banner"><div><b>Can't find the route you need?</b><p>Send us a request for your daily commute.</p></div><button id="demandBtn" type="button" class="outline-white">Request a route ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
+        <div class="help-banner"><div><span class="help-eyebrow">SHAPE THE NETWORK</span><b>Your route isn't here yet?</b><p>Request a new stop, route or additional seats. We use demand to plan what runs next.</p></div><button id="demandBtn" type="button" class="outline-white">Request a stop or route ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
       </section>
       <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>My bookings</h2></div></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to view your bookings.</div></div></section>
       <section class="content hidden" id="pageTracking"><div class="section-head"><div><div class="eyebrow muted">LIVE LOCATION</div><h2>Track your assigned ride</h2></div></div><p class="helper-copy">Live tracking is available for confirmed, paid bookings when the assigned driver is sharing their location.</p><div id="trackList" class="pass-list"></div><div id="trackResult" class="track-box hidden"></div></section>
       <section class="content hidden" id="pageDriver"><div class="section-head"><div><div class="eyebrow muted">AUTHORIZED DRIVER</div><h2>Today's assigned services</h2></div></div><p class="helper-copy">Share your location only during assigned trips. Browser GPS is suitable for testing; production operations require a reliable approved tracking device or driver app.</p><div id="driverServices" class="pass-list"></div><div id="driverStatus" class="track-box hidden"></div></section>
       <section class="content hidden" id="pageOps"><div class="section-head"><div><div class="eyebrow muted">FLEET CONTROL</div><h2>Operations overview</h2></div></div><div id="opsDashboard" class="ops-kpis"></div><div class="ops-section"><h3>Route requests</h3><div id="opsDemand" class="pass-list"></div></div><div class="ops-section"><h3>Scheduled services</h3><div id="opsServices" class="pass-list"></div></div><div id="opsBuilder" class="ops-section"></div></section>
     </main>
-    <footer><span>TRIPPY CORPORATE</span><span>Made for the daily commute in Dhaka.</span><span>© 2026 TRIPPY</span></footer>
+    <footer><span>TRIPPY CORPORATE</span><span>Smarter planning. Better everyday journeys.</span><span>© 2026 TRIPPY</span></footer>
+    <nav class="mobile-bottom-nav" aria-label="Quick navigation">
+      <button type="button" class="mobile-nav-btn active" data-page="search"><span aria-hidden="true">⌂</span>Explore</button>
+      <button type="button" class="mobile-nav-btn" data-page="passes"><span aria-hidden="true">▣</span>Bookings</button>
+      <button type="button" class="mobile-nav-btn" data-page="tracking"><span aria-hidden="true">⌖</span>Track</button>
+      <button type="button" class="mobile-nav-btn hidden" data-page="ops" id="mobileOpsNav"><span aria-hidden="true">☷</span>Operations</button>
+    </nav>
   </div>
   <div id="modalBackdrop" class="modal-backdrop hidden" role="presentation"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-header"><div><div class="eyebrow muted" id="modalKicker">BOOK YOUR COMMUTE</div><h2 id="modalTitle">Select a seat</h2></div><button class="close" id="modalClose" type="button" aria-label="Close dialog">×</button></div><div id="modalContent"></div></section></div>
   <div class="toast hidden" role="status" aria-live="polite" id="toast"></div>
