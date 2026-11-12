@@ -50,6 +50,8 @@ export async function loadPasses(){
       const estimated=Number(b.estimated_total_bdt||0);
       const discount=Number(b.discount_percent||0);
       const base=Number(b.estimated_base_amount_bdt||0);
+      left.append(node('p',{className:'demo-pass-payment'},
+        'Practice receipt: DEMO-'+String(b.id).slice(0,8).toUpperCase()));
       if(b.payment_status==='simulated'){
         left.append(node('p',{className:'demo-pass-pricing'},
           'Example base '+formatBdt(base)+' · '+discount+'% sample discount · Illustrative total '+formatBdt(estimated)));
