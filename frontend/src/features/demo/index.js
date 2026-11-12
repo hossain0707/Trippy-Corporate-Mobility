@@ -4,10 +4,10 @@ import {seatLayout} from '../booking/seatMap.js';
 import {openLogin} from '../auth/index.js';
 
 const paymentMethods = [
-  ['bkash_demo','bKash','Mobile wallet · simulation'],
+  ['bkash_demo','bKash','Mobile wallet · demo'],
   ['nagad_demo','Nagad','Mobile wallet · simulation'],
-  ['card_demo','Debit / credit card','Card checkout · simulation'],
-  ['bank_demo','Bank transfer','Bank payment · simulation'],
+  ['card_demo','Debit / credit card','Card checkout · demo'],
+  ['bank_demo','Bank transfer','Bank transfer · demo'],
 ];
 export const paymentLabel = id => paymentMethods.find(([key])=>key===id)?.[1] || 'Not selected';
 
@@ -17,13 +17,13 @@ export function priceRows(container,fare) {
     item.append(node('span',{},label),node('strong',{},value));
     container.append(item);
   };
-  line('Monthly example rate',formatBdt(fare.monthlyRateBdt));
-  line('Base subscription price',formatBdt(fare.baseAmountBdt));
-  line('Example discount ('+fare.discountPercent+'%)','− '+formatBdt(fare.discountAmountBdt));
-  line('Illustrative fare after discount',formatBdt(fare.estimatedTotalBdt),'demo-fare-estimate');
-  line('Amount actually charged','৳0','demo-fare-free');
+  line('Monthly fare',formatBdt(fare.monthlyRateBdt));
+  line('Plan subtotal',formatBdt(fare.baseAmountBdt));
+  line('Sample discount ('+fare.discountPercent+'%)','− '+formatBdt(fare.discountAmountBdt));
+  line('Estimated total',formatBdt(fare.estimatedTotalBdt),'demo-fare-estimate');
+  line('Charged in demo','৳0','demo-fare-free');
   container.append(node('p',{className:'demo-disclaimer'},
-    'Illustrative pricing only. Promotions and eligibility for actual bookings may differ. No payment is processed.'));
+    'Sample fares only. Real discounts and eligibility may differ. No payment is collected.'));
 }
 
 export function demoCard(service,getSearch) {
@@ -70,7 +70,7 @@ export async function openDemoSeats(service,getSearch){
 
     const stage=node('div',{className:'demo-progress','aria-label':'Booking steps'});
     stage.append(node('span',{className:'demo-progress-step active'},'1 · Choose seat'),
-      node('span',{className:'demo-progress-step'},'2 · Review & pay'),
+      node('span',{className:'demo-progress-step'},'2 · Checkout'),
       node('span',{className:'demo-progress-step'},'3 · Receipt'));
     body.append(stage);
     const first=stage.children[0],second=stage.children[1],third=stage.children[2];
@@ -94,7 +94,7 @@ export async function openDemoSeats(service,getSearch){
       selectedSeat=seat;
       continueButton.disabled=false;
       continueButton.textContent='Continue with seat '+seat.label+' →';
-      hint.textContent='Seat '+seat.label+' selected for this demonstration.';
+      hint.textContent='Seat '+seat.label+' selected.';
     });
     seatStep.append(hint);
     const seatActions=node('div',{className:'modal-actions'});
