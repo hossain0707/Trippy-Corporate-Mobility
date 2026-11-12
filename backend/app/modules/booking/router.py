@@ -75,9 +75,14 @@ def demand(data:DemandRequest,user=Depends(actor)):
     throttle('seat-demand',user['id'],6,3600)
     if data.homeZone.strip().lower()==data.officeZone.strip().lower(): fail(422,'Home and office must differ')
     with connection() as conn:
-        return one(conn,'''INSERT INTO app.demand_requests(user_id,service_id,home_zone,office_zone,preferred_class)
-          VALUES(%s,%s,%s,%s,%s) RETURNING id,status,created_at''',
-          (user['id'],data.serviceId,data.homeZone.strip(),data.officeZone.strip(),data.vehicleClass))
+        return one(conn,'''INSERT INTO app.demand_requests
+          (user_id,service_id,home_zone,office_zone,preferred_class,
+           request_kind,preferred_morning_time,preferred_evening_time,notes)
+          VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+          RETURNING id,status,request_kind,created_at''',
+          (user['id'],data.serviceId,data.homeZone.strip(),data.officeZone.strip(),
+           data.vehicleClass,data.requestKind,data.preferredMorningTime,
+           data.preferredEveningTime,data.notes))
 
 @router.post('/reservations/{reservation_id}/release')
 def release_hold(reservation_id:UUID,user=Depends(actor)):
