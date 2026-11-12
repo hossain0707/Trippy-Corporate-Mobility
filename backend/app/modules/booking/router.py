@@ -9,6 +9,7 @@ from ...core.limits import throttle
 from ...core.schemas import HoldRequest,DemandRequest
 from ..auth.router import actor
 from .pricing import quote,end_date
+from .corridors import segment_orders
 
 router=APIRouter(prefix='/api',tags=['Reservations'])
 
@@ -31,22 +32,18 @@ def create_hold(conn,user_id,d:HoldRequest):
     execute(conn,"UPDATE app.reservations SET status='expired' WHERE (service_id=%s OR user_id=%s) AND status='held' AND hold_expires_at<=now()",(d.serviceId,user_id))
     if not one(conn,'SELECT 1 FROM app.vehicle_seats WHERE id=%s AND vehicle_id=%s AND enabled',(d.seatId,service['vehicle_id'])):
         fail(422,'Seat is not a bookable seat of this vehicle')
-    stops=rows(conn,'''SELECT rs.direction,rs.stop_id,rs.stop_order FROM app.route_stops rs
-      JOIN app.stops t ON t.id=rs.stop_id WHERE rs.route_id=%s AND rs.stop_id=ANY(%s::uuid[]) AND t.approved AND t.active''',
-      (service['route_id'],[d.pickupStopId,d.dropoffStopId]))
-    order={(x['direction'],x['stop_id']):x['stop_order'] for x in stops}
-    p,z=d.pickupStopId,d.dropoffStopId
-    if (('morning',p) not in order or ('morning',z) not in order or
-       ('evening',p) not in order or ('evening',z) not in order or
-       order['morning',p]>=order['morning',z] or order['evening',z]>=order['evening',p]):
-        fail(422,'Stops are not approved in correct morning/evening order')
+    mp,md,ed,ep=segment_orders(conn,service['route_id'],d.pickupStopId,d.dropoffStopId)
     first=not user['welcome_redeemed_at'] and not one(conn,"SELECT 1 FROM app.reservations WHERE user_id=%s AND status='confirmed' LIMIT 1",(user_id,))
     fare=quote(service['class'],d.months,first)
     return one(conn,'''INSERT INTO app.reservations
         (user_id,service_id,seat_id,pickup_stop_id,dropoff_stop_id,starts_on,ends_before,months,
-         base_amount_bdt,discount_percent,amount_bdt,applies_welcome_offer,hold_expires_at,idempotency_key)
-        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now()+interval '10 minutes',%s) RETURNING *''',
-        (user_id,d.serviceId,d.seatId,p,z,d.startDate,ends,d.months,fare.base,fare.discount,fare.amount,fare.welcome,d.idempotencyKey))
+         base_amount_bdt,discount_percent,amount_bdt,applies_welcome_offer,hold_expires_at,idempotency_key,
+         morning_segment,evening_segment)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,now()+interval '10 minutes',%s,
+               int4range(%s,%s,'[)'),int4range(%s,%s,'[)')) RETURNING *''',
+        (user_id,d.serviceId,d.seatId,d.pickupStopId,d.dropoffStopId,d.startDate,ends,
+         d.months,fare.base,fare.discount,fare.amount,fare.welcome,d.idempotencyKey,
+         mp,md,ed,ep))
 
 @router.post('/reservations/hold',status_code=201)
 def hold(data:HoldRequest,user=Depends(actor)):
