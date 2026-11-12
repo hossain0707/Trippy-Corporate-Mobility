@@ -88,3 +88,30 @@ def test_admin_visibility_requires_staff_authentication():
     for route in demo.router.routes:
         if route.path.startswith('/api/admin/demo'):
             assert any(dep.call is not None for dep in route.dependant.dependencies)
+
+
+def test_demo_seat_endpoint_accepts_subscription_months_from_http_query(monkeypatch):
+    """Regression: Literal[int] in Query rejects stringified numbers with FastAPI/Pydantic."""
+    from contextlib import nullcontext
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setattr(demo, 'connection', lambda: nullcontext(object()))
+    monkeypatch.setattr(demo, 'demo_period', lambda start, months: date(2026,12,16))
+    monkeypatch.setattr(demo, 'demo_service', lambda conn,ident: {
+        'id': SERVICE, 'vehicle_id': SERVICE, 'vehicle_class': 'bus'
+    })
+    monkeypatch.setattr(demo, 'rows', lambda conn,sql,args=():[
+        {'id': SEAT, 'label': 'B01', 'row_no': 1, 'col_no': 0, 'occupied': False}
+    ])
+    app = FastAPI()
+    app.include_router(demo.router)
+    client = TestClient(app)
+    for months in (1,3,6,12):
+        result=client.get(f'/api/demo/services/{SERVICE}/seats',
+            params={'startDate':'2026-11-16','months':str(months)})
+        assert result.status_code==200, result.json()
+        assert result.json()['availableCount']==1
+    invalid=client.get(f'/api/demo/services/{SERVICE}/seats',
+        params={'startDate':'2026-11-16','months':'invalid'})
+    assert invalid.status_code==422

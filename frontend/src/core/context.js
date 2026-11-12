@@ -60,7 +60,13 @@ export async function api(path,{method='GET',json,auth=false}={}){
   if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers.authorization='Bearer '+data.session.access_token}
   let res;try{res=await fetch(config.api+path,{method,headers,body,cache:'no-store'})}catch{throw new Error('Unable to reach Trippy API. Check the server connection.')}
   let parsed=null;try{parsed=await res.json()}catch{}
-  if(!res.ok)throw new Error(parsed?.message||parsed?.detail||`Server returned ${res.status}`);
+  if(!res.ok){
+    const detail=parsed?.message??parsed?.detail;
+    const message=Array.isArray(detail)
+      ? detail.map(item=>item?.msg||'Invalid request').join('; ')
+      : (typeof detail==='string'?detail:`Server returned ${res.status}`);
+    throw new Error(message);
+  }
   return parsed;
 }
 export function formatTime(t){if(!t)return '—';const [h,m]=String(t).split(':');const num=Number(h);return `${num%12||12}:${m} ${num>=12?'PM':'AM'}`}
