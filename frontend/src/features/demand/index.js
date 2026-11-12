@@ -80,5 +80,4 @@ function showForm(){
       }catch(error){showToast(error.message);submit.disabled=false}
     };
     body.append(form);
-  };
 }
