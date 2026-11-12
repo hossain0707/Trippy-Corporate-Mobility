@@ -260,6 +260,7 @@ Ashulia|আশুলিয়া|area|Ashulia|
 Tongi|টঙ্গী|area|Tongi|
 Uttarkhan|উত্তরখান|area|Uttarkhan|
 Dakshinkhan|দক্ষিণখান|area|Dakshinkhan|
+`;
 
 const CATEGORY_LABELS = Object.freeze({
   area: ['Area', 'এলাকা'],
@@ -279,10 +280,10 @@ const LATIN_DIGITS = '0123456789';
 export const normalizePlaceQuery = text => String(text || '')
   .normalize('NFKC').toLowerCase()
   .replace(/[০-৯]/g, char => LATIN_DIGITS[BANGLA_DIGITS.indexOf(char)])
-  .replace(/[\\u200c\\u200d]/g, '')
-  .replace(/[^\\p{L}\\p{N}]+/gu, ' ').trim().replace(/\\s+/g, ' ');
+  .replace(/[\u200c\u200d]/g, '')
+  .replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
 
-const rows = AREA_ROWS.trim().split('\\n').map((row, index) => {
+const rows = AREA_ROWS.trim().split('\n').map((row, index) => {
   const [name,bangla,category,zone,alias=''] = row.split('|');
   return Object.freeze({
     id: 'curated-'+index,
@@ -299,7 +300,7 @@ const rows = AREA_ROWS.trim().split('\\n').map((row, index) => {
 });
 
 for (let sector = 1; sector <= 18; sector++) {
-  const banglaNumber = String(sector).replace(/\\d/g, digit => BANGLA_DIGITS[Number(digit)]);
+  const banglaNumber = String(sector).replace(/\d/g, digit => BANGLA_DIGITS[Number(digit)]);
   rows.push(Object.freeze({
     id: 'uttara-sector-'+sector,
     name: 'Uttara Sector '+sector,
