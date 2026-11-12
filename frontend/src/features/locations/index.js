@@ -100,6 +100,9 @@ export function mountLocationAutocomplete(input){
   let approved=[],mapped=[];
   const close=()=>{
     dropdown.classList.add('hidden');
+    generation++;
+    if(debounce!==null){clearTimeout(debounce);debounce=null}
+    if(pending){pending.abort();pending=null}
     input.setAttribute('aria-expanded','false');
     input.removeAttribute('aria-activedescendant');
     activeIndex=-1;
@@ -151,6 +154,17 @@ export function mountLocationAutocomplete(input){
       option.onclick=()=>choice(place);
       dropdown.append(option);
     });
+    if(mapped.length && current.some(place=>place.source==='map')){
+      const attribution=node('div',{className:'location-attribution'});
+      attribution.append(document.createTextNode('Map data: '));
+      attribution.append(node('a',{href:'https://www.maptiler.com/copyright/',
+        rel:'noopener noreferrer',target:'_blank'},'MapTiler'));
+      attribution.append(document.createTextNode(' · '));
+      attribution.append(node('a',{href:'https://www.openstreetmap.org/copyright',
+        rel:'noopener noreferrer',target:'_blank'},'OpenStreetMap'));
+      dropdown.append(attribution);
+    }
+    if(document.activeElement!==input)return;
     dropdown.classList.remove('hidden');
     input.setAttribute('aria-expanded','true');
     activeIndex=-1;
