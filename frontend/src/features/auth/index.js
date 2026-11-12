@@ -203,8 +203,8 @@ export function openLogin(onSuccess, mode = 'login') {
 }
 
 function openPhoneVerification(link, onSuccess) {
-  showModal(link ? 'Verify mobile number' : 'Use mobile number', 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
+  showModal(link ? 'Verify mobile number' : 'Use mobile number', 'Trippy Corporate', {variant: 'auth'});
+  const form = node('form', {className: 'form-stack auth-form'});
   const phone = field(form, 'Mobile number', {type: 'tel', pattern: '\\+8801[0-9]{9}', placeholder: '+8801XXXXXXXXX', autocomplete: 'tel'});
   submit(form, 'Send verification code', async () => {
     const number = phone.value.trim();
@@ -226,8 +226,8 @@ function openPhoneVerification(link, onSuccess) {
 }
 
 export function openPasswordUpdate() {
-  showModal('Set new password', 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
+  showModal('Set new password', 'Trippy Corporate', {variant: 'auth'});
+  const form = node('form', {className: 'form-stack auth-form'});
   const password = field(form, 'Password', {type: 'password', autocomplete: 'new-password', minlength: '12', maxlength: '72'});
   submit(form, 'Set new password', async () => {
     const {error} = await supabase.auth.updateUser({password: password.value});
