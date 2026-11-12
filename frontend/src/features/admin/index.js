@@ -1,6 +1,7 @@
 import {$,node,state,api,formatTime,showToast} from '../../core/context.js';
 import {seatPositions} from './seatTemplates.js';
 import {openStaffVerification} from '../auth/index.js';
+import {loadDemoManagement} from '../demo/admin.js';
 
 let activeWorkspaceTab = 'fleet';
 function kpi(label,value){const b=node('div',{className:'ops-kpi'});b.append(node('b',{},String(value)),node('small',{},label));return b}
@@ -34,7 +35,14 @@ export async function loadOperations(){
       const toggle=node('button',{className:'outline',type:'button'},s.active?'Pause service':'Activate service');
       toggle.onclick=async()=>{toggle.disabled=true;try{await api('/api/admin/services/'+s.id+'/activate',{method:'PATCH',auth:true,json:{active:!s.active}});showToast('Service state updated');loadOperations()}catch(e){showToast(e.message);toggle.disabled=false}};
       card.append(left,toggle);services.append(card)}
-    if(state.user.role==='admin')buildAdminForms(builder,{stops,vehicles,routes,allServices});
+    if(state.user.role==='admin'){
+      const demoPanel=node('section',{className:'ops-demo-management'});
+      builder.append(demoPanel);
+      loadDemoManagement(demoPanel,vehicles,loadOperations).catch(e=>{
+        demoPanel.append(node('div',{className:'error-note'},'Demo management unavailable: '+e.message));
+      });
+      buildAdminForms(builder,{stops,vehicles,routes,allServices});
+    }
     showReviewQueues(builder,state.user.role).catch(e=>showToast('Review queue unavailable: '+e.message));
   }catch(e){dashboard.replaceChildren(node('div',{className:'empty-message'},e.message))}
 }
