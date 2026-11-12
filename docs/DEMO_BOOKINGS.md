@@ -42,3 +42,24 @@ This feature is a **simulation** alongside the verified real-service catalog. It
 - A single shared demo bus uses a simulated citywide seat pool; it does **not** imply that one bus can physically serve different routes simultaneously.
 - Historic demo bookings are retained after removal for accountability; define a privacy retention/deletion policy before opening to the public.
 - The existing fixture vehicle remains inactive and unverified. Never use its dummy registration in legal fleet records or paid service publication.
+
+## Realistic checkout walkthrough (simulation only)
+
+The **Try the demo checkout** action shows three stages:
+
+1. **Seat and example itinerary.** Select an available numbered seat and provide two different Dhaka-area names. Choose the same 1-, 3-, 6- or 12-month duration as in search.
+2. **Fare and mock payment selection.** The backend quotes the current bus/Hiace/car monthly tariff using the existing pricing module. It displays the sample base, example promotion, estimated total, and **actual amount collected ৳0**. For a 1-month plan the 20% welcome offer is **illustrative**, not evidence of eligibility for any real discount. Select a *simulated* payment method from bKash, Nagad, debit/credit card, or bank transfer, and acknowledge that no transaction will occur. No personal payment details, PIN, OTP, CVV or card number are requested or stored.
+3. **Demo receipt.** The backend saves the mock method, sample fare and discount against the demo-only booking record, and returns a `DEMO-` reference. The receipt says **Simulated — NOT paid**. My Passes displays the same fare, simulated method, receipt reference and charged amount of ৳0, including for removed demo services.
+
+**Never** treat the illustrated fare as paid revenue, an invoice, a tax receipt, a promise of vehicle service, or a successful payment gateway verification. Demo quote snapshots are immutable examples, not entries in `app.payment_attempts`. Historical demo records created before this upgrade appear as `Legacy demo booking / payment not processed`.
+
+### Example current sample pricing
+
+| Duration | Bus sample base | Example discount | Example total | Actual payment |
+| --- | ---: | ---: | ---: | ---: |
+| 1 month | ৳5,000 | 20% example welcome | ৳4,000 | **৳0** |
+| 3 months | ৳15,000 | 25% | ৳11,250 | **৳0** |
+| 6 months | ৳30,000 | 30% | ৳21,000 | **৳0** |
+| 12 months | ৳60,000 | 35% | ৳39,000 | **৳0** |
+
+Values above reflect the pricing module at time of documentation. The API, not the browser, calculates demo quotes, so tariff adjustments should update both the preview and saved snapshot. After all user-facing checks, verify the actual signed-in booking and receipt in a staging account before treating the workflow as fully QA-cleared.

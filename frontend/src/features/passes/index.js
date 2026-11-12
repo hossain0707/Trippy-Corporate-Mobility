@@ -46,6 +46,23 @@ export async function loadPasses(){
       const card=node('article',{className:'pass-card demo-pass-card'}),left=node('div');
       left.append(node('strong',{},b.service_name+' · Seat '+b.seat_label),
         node('p',{},b.pickup_zone+' → '+b.office_zone+' · '+b.starts_on+' to '+b.ends_before+' · ৳0'));
+      const paymentNames={bkash_demo:'bKash',nagad_demo:'Nagad',card_demo:'Debit / credit card',bank_demo:'Bank transfer'};
+      const estimated=Number(b.estimated_total_bdt||0);
+      const discount=Number(b.discount_percent||0);
+      const base=Number(b.estimated_base_amount_bdt||0);
+      left.append(node('p',{className:'demo-pass-payment'},
+        'Practice receipt: DEMO-'+String(b.id).slice(0,8).toUpperCase()));
+      if(b.payment_status==='simulated'){
+        left.append(node('p',{className:'demo-pass-pricing'},
+          'Example base '+formatBdt(base)+' · '+discount+'% sample discount · Illustrative total '+formatBdt(estimated)));
+        left.append(node('p',{className:'demo-pass-payment'},
+          'Payment method: '+(paymentNames[b.payment_method]||'Simulation')+
+          ' · Status: Simulated (NOT paid) · Collected: ৳0'));
+      }else{
+        left.append(node('p',{className:'demo-pass-payment'},
+          'Legacy demo booking · Payment was not processed · Collected: ৳0'));
+      }
+      left.append(node('small',{},'This is NOT a real transport ticket or payment receipt.'));
       if(b.archived)left.append(node('small',{},'This demonstration service has been removed by an administrator.'));
       card.append(left,node('span',{className:'demo-service-badge'},'DEMO BOOKED'));
       el.append(card);

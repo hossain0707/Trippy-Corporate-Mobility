@@ -1,5 +1,6 @@
 """Citywide DEMO ONLY. These endpoints never touch paid seat reservations or checkout."""
 from datetime import date
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -11,7 +12,7 @@ from ...core.errors import fail
 from ...core.limits import throttle
 from ...core.schemas import Duration
 from ..auth.router import actor, require
-from ..booking.pricing import end_date
+from ..booking.pricing import end_date, quote, MONTHLY
 
 router = APIRouter(prefix="/api", tags=["Demo bookings — no real transport"])
 
@@ -36,6 +37,23 @@ class DemoBooking(Strict):
     startDate: date
     months: Duration
     idempotencyKey: UUID
+    paymentMethod: Literal["bkash_demo","nagad_demo","card_demo","bank_demo"]
+
+
+def demo_quote(vehicle_class:str, months:int):
+    # Illustration of the current catalog tariff. The first-month discount is a
+    # SAMPLE offer, not a claim that a customer qualifies for the real promotion.
+    pricing = quote(vehicle_class,months,True)
+    return {
+        "monthlyRateBdt": MONTHLY[vehicle_class],
+        "baseAmountBdt": pricing.base,
+        "discountPercent": pricing.discount,
+        "discountAmountBdt": pricing.base - pricing.amount,
+        "estimatedTotalBdt": pricing.amount,
+        "amountChargedBdt": 0,
+        "isIllustrative": True,
+        "exampleWelcomeOffer": pricing.welcome,
+    }
 
 
 def demo_period(start_date: date, months: int) -> date:
@@ -108,7 +126,8 @@ def public_demo_seats(service_id: UUID, startDate: date, months: int = Query(1, 
             ORDER BY s.row_no,s.col_no""", (service_id, startDate, ends, service["vehicle_id"]))
         return {"isDemo": True, "service": service, "startsOn": startDate,
                 "endsBefore": ends, "seats": seats,
-                "availableCount": sum(not seat["occupied"] for seat in seats)}
+                "availableCount": sum(not seat["occupied"] for seat in seats),
+                "farePreview": demo_quote(service["vehicle_class"], months)}
 
 
 def create_demo_booking(conn, user_id: UUID, service_id: UUID, data: DemoBooking):
@@ -125,6 +144,7 @@ def create_demo_booking(conn, user_id: UUID, service_id: UUID, data: DemoBooking
         if (previous["service_id"] == service_id and previous["seat_id"] == data.seatId
                 and previous["starts_on"] == data.startDate and previous["ends_before"] == ends
                 and previous["pickup_zone"] == pickup and previous["office_zone"] == office
+                and previous["payment_method"] == data.paymentMethod
                 and previous["status"] == "demo_booked"):
             return previous
         fail(409, "This demo booking request was already used")
@@ -132,11 +152,17 @@ def create_demo_booking(conn, user_id: UUID, service_id: UUID, data: DemoBooking
         WHERE id=%s AND vehicle_id=%s AND enabled""", (data.seatId, service["vehicle_id"]))
     if not seat:
         fail(422, "Seat is not part of this demo vehicle")
+    price = demo_quote(service["vehicle_class"],data.months)
     booking = one(conn, """INSERT INTO app.demo_bookings
-      (service_id,user_id,seat_id,pickup_zone,office_zone,starts_on,ends_before,months,idempotency_key)
-      VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
-      RETURNING id,service_id,seat_id,starts_on,ends_before,months,status,created_at""",
-      (service_id,user_id,data.seatId,pickup,office,data.startDate,ends,data.months,data.idempotencyKey))
+      (service_id,user_id,seat_id,pickup_zone,office_zone,starts_on,ends_before,months,
+       idempotency_key,estimated_base_amount_bdt,discount_percent,estimated_total_bdt,
+       payment_method,payment_status)
+      VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'simulated')
+      RETURNING id,service_id,seat_id,starts_on,ends_before,months,status,created_at,
+        estimated_base_amount_bdt,discount_percent,estimated_total_bdt,payment_method,payment_status""",
+      (service_id,user_id,data.seatId,pickup,office,data.startDate,ends,data.months,
+       data.idempotencyKey,price["baseAmountBdt"],price["discountPercent"],
+       price["estimatedTotalBdt"],data.paymentMethod))
     execute(conn, """INSERT INTO app.audit_events(actor_id,action,target_id,detail)
       VALUES(%s,'demo.booking_created',%s,
       jsonb_build_object('demo',true,'payment',false,'service_id',%s))""",
@@ -150,8 +176,8 @@ def book_demo(service_id: UUID, data: DemoBooking, user=Depends(actor)):
     try:
         with connection() as conn:
             booking = create_demo_booking(conn, user["id"], service_id, data)
-        return {**booking, "isDemo": True, "amountBdt": 0,
-                "message": "Demo Booked — no real journey or payment"}
+        return {**booking, "isDemo": True, "amountChargedBdt": 0,
+                "message": "Demo Booked — simulated payment only, no money collected"}
     except (UniqueViolation, ExclusionViolation):
         fail(409, "This demo seat is occupied for those dates, or you already have a demo seat")
 
@@ -161,6 +187,8 @@ def my_demo_bookings(user=Depends(actor)):
     with connection() as conn:
         return rows(conn, """SELECT b.id,b.service_id,b.pickup_zone,b.office_zone,
           b.starts_on::text,b.ends_before::text,b.months,b.status,b.created_at,
+          b.estimated_base_amount_bdt,b.discount_percent,b.estimated_total_bdt,
+          b.payment_method,b.payment_status,
           v.class AS vehicle_class,s.label AS seat_label,d.name AS service_name,
           (d.removed_at IS NOT NULL) AS archived
           FROM app.demo_bookings b
