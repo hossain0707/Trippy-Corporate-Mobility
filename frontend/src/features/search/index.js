@@ -28,7 +28,7 @@ export async function loadRoutes(){
     [real.length?'যাত্রা '+real.length.toLocaleString(locale)+'টি':'',demo.length?'ডেমো '+demo.length.toLocaleString(locale)+'টি':''].filter(Boolean).join(' · ') || 'কোনো যাত্রা পাওয়া যায়নি'
   );
   if(realResult.status==='rejected'){
-    container.append(node('div',{className:'error-note'},'Real ride search unavailable: '+realResult.reason.message));
+    container.append(node('div',{className:'error-note'},'We couldn’t load live rides. Please try again shortly.'));
   }else if(!real.length && !demo.length){
     container.append(node('div',{className:'empty-message'},'No rides match your search yet. Try another area or request a route.'));
   }
