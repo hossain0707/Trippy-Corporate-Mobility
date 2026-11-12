@@ -10,7 +10,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node --check src/main.js && node --check src/core/context.js",
+    "check": "node --check src/main.js && node --check src/core/context.js && node --check src/features/search/index.js && node --check src/features/booking/index.js && node --check src/features/demand/index.js && node --check src/features/admin/index.js && node --check src/features/admin/corridors.js && node --check src/features/admin/demand.js",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
