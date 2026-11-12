@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
   dhakaPlaces,normalizePlaceQuery,rankDhakaPlaces,mergeLocationSuggestions,
+  mapFeaturesToSuggestions,DHAKA_BBOX,
 } from '../src/features/locations/catalog.js';
 
 const names = (query,limit=8)=>rankDhakaPlaces(query,dhakaPlaces,limit).map(p=>p.name);
@@ -83,4 +84,19 @@ test('page integrates autocomplete into pickup and destination without removing 
   assert.match(ui,/aria-autocomplete/);
   assert.match(ui,/aria-activedescendant/);
   assert.match(ui,/DEBOUNCE_MS=350/);
+});
+
+test('map results are limited to Greater Dhaka and carry real provider coordinates',()=>{
+  const features=[
+    {id:'place.banani',text:'Banani',center:[90.405,23.793],place_type:['place']},
+    {id:'place.mumbai',text:'Bandra',center:[72.85,19.05],place_type:['place']},
+    {id:'road',text:'Banani Road 11',center:[90.41,23.79],place_type:['road']},
+    {id:'missing',text:'No point',place_type:['poi']},
+  ];
+  const actual=mapFeaturesToSuggestions(features);
+  assert.equal(actual.length,2);
+  assert.equal(actual[0].name,'Banani');
+  assert.equal(actual[0].latitude,23.793);
+  assert.equal(actual[1].category,'road');
+  assert.equal(DHAKA_BBOX.length,4);
 });
