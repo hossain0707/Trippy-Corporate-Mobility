@@ -371,3 +371,25 @@ linear-gradient(140deg,#052d36,#00433a 55%,#072833)}
  .theam-how-steps{grid-template-columns:1fr 1fr}
 }
 @media(prefers-reduced-motion:reduce){.theam-plan-choice,.theam-view-button,.theam-featured-action{transition:none}}
+
+/* Phone shell must behave like an app during scrolling, not just at the footer. */
+body[data-trippy-view="phone"]:not(.theam-operations) .mobile-bottom-nav{
+  position:fixed;left:50%;right:auto;bottom:22px;
+  transform:translateX(-50%);width:438px;max-width:100%;
+  border-radius:0 0 31px 31px;
+  z-index:42;
+}
+body[data-trippy-view="phone"]:not(.theam-operations) #app{padding-bottom:68px}
+.modal-backdrop{z-index:100!important}
+.theam-ops-back{
+  width:100%;text-align:left;background:#084d43;color:#b7ffde;
+  border:1px solid #39d6a45b;border-radius:12px;
+  font-size:11px;font-weight:850;padding:12px;margin:0 0 4px;
+}
+.theam-ops-back:hover{background:#0b775c}
+@media(max-width:530px){
+ body[data-trippy-view="phone"]:not(.theam-operations) .mobile-bottom-nav{
+   bottom:0;left:0;right:0;transform:none;width:100%;
+   border-radius:0;padding-bottom:calc(9px + env(safe-area-inset-bottom));
+ }
+}
