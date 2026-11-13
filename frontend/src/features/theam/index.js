@@ -101,6 +101,8 @@ export function initTheam(navigate){
   $('theamPhoneView').onclick=()=>updateView('phone');
   $('theamWebView').onclick=()=>updateView('web');
   $('theamGetStarted').onclick=()=>$('accountBtn').click();
+  $('theamMobileProfile').onclick=()=>$('accountBtn').click();
+  $('theamTrackRide').onclick=()=>publicNavigate?.('tracking');
   $('theamNavRequest').onclick=()=>{
     goHome('hero');
     $('demandBtn').click();
@@ -131,6 +133,7 @@ export function initTheam(navigate){
       const targets={
         overview:'opsDashboard',routes:'opsBuilder',demand:'theamOpsDemandSection',
         fleet:'opsBuilder',scheduling:'opsBuilder',bookings:'theamOpsServicesSection',
+        passengers:'theamOpsPassengerSection',operations:'opsBuilder',
         analytics:'theamOpsAnalyticsSection',settings:'opsBuilder',
       };
       scrollTo(targets[section]||'opsDashboard');
@@ -250,6 +253,10 @@ export async function renderOpsTheam({overview,requests,demandSummary,allService
   const activeRoutes=routes.filter(r=>r.active);
   const activeServices=allServices.filter(s=>s.active);
   const dashboard=$('opsDashboard');
+  const passengers=$('theamOpsPassengerSection');
+  passengers.replaceChildren();
+  passengers.append(node('h3',{},'Passengers & subscriptions'),
+    node('p',{},overview.confirmedSubscriptions+' confirmed paid bookings. Individual passenger details remain restricted to authorized service workflows.'));
   dashboard.replaceChildren(
     kpi('Confirmed Bookings',overview.confirmedSubscriptions,'♧'),
     kpi('Active Vehicles',overview.activeVehicles,'▣'),
