@@ -393,3 +393,10 @@ body[data-trippy-view="phone"]:not(.theam-operations) #app{padding-bottom:68px}
    border-radius:0;padding-bottom:calc(9px + env(safe-area-inset-bottom));
  }
 }
+
+/* Approved mobile reference: Home · Routes · Bookings · Profile; ride tracking remains available from My Bookings. */
+.theam-track-link{border:1px solid #80c6ac;background:linear-gradient(105deg,#d7fae7,#eafaf1);border-radius:12px;color:#03694c;padding:10px 15px;font-size:11px;font-weight:900}
+.theam-ops-passengers{margin-top:14px;border:1px solid #0bb78a9e;border-radius:14px;background:linear-gradient(130deg,#02423b,#004f46);padding:17px 20px}
+.theam-ops-passengers h3{color:#f0fff9;font-size:16px;margin:0 0 6px}
+.theam-ops-passengers p{color:#b3efce;font-size:12px;margin:0}
+@media(max-width:530px){body[data-trippy-view="phone"] .mobile-bottom-nav button{min-width:54px;padding:7px}}
