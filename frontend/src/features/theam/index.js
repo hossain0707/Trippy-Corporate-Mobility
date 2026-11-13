@@ -33,15 +33,16 @@ function makePlanCard(plan){
   const select=$('months'),current=Number(select?.value||1);
   const selected=current===plan.months;
   const baseBus=5000;
-  const discount=plan.months===1?20:plan.discount;
-  const monthly=baseBus*(100-discount/100);
+  const intro=plan.months===1;
+  const discount=plan.discount;
+  const monthly=intro?baseBus:baseBus*(100-discount/100);
   const button=node('button',{type:'button',
     className:'theam-plan-choice'+(selected?' selected':''),
     'aria-pressed':String(selected),'aria-label':plan.label+' subscription'});
   const label=node('b',{},plan.label);
-  const badge=node('span',{className:'theam-plan-discount'},discount+'% OFF');
+  const badge=node('span',{className:'theam-plan-discount'},intro?'20% welcome':discount+'% OFF');
   const price=node('strong',{},formatBdt(monthly));
-  const sub=node('small',{},'per month · bus example');
+  const sub=node('small',{},intro?'New-rider fare from ৳4,000':'per month · bus example');
   const call=node('span',{className:'theam-plan-select'},selected?'Selected ✓':'Select');
   button.append(label,badge,price,sub,call);
   button.onclick=()=>{
