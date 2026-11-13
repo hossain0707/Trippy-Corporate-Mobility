@@ -11,7 +11,17 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
 <body>
-  <div id="app">
+  <section id="devGate" hidden style="max-width:420px;margin:12vh auto;padding:24px">
+    <h1>Trippy Dev</h1>
+    <form id="devGateForm" class="form-stack">
+      <label>Email<input name="email" type="email" autocomplete="email" required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">Sign in</button>
+      <button class="outline" type="button" id="devSignup">Sign up</button>
+      <p id="devGateStatus" role="status"></p>
+    </form>
+  </section>
+  <div id="app" hidden style="display:none">
     <header class="site-header">
       <div class="header-wrap">
         <a class="logo" href="#search" aria-label="Trippy Corporate home"><span class="logo-mark">t</span><span>trippy<span class="logo-soft"> corporate</span></span></a>

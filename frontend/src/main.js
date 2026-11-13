@@ -1,3 +1,4 @@
+import {showDevAccount} from './core/dev-gate.js';
 import './style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {$,node,state,api,dhakaDay,showToast,supabase,configured} from './core/context.js';
@@ -20,7 +21,6 @@ document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>setPage(b.data
 async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomorrow;$('startDate').min=dhakaDay();$('startDate').max=dhakaDay(60);
   if(new URLSearchParams(location.search).get('payment'))showToast('Payment processing. Check My passes after provider verification. A browser redirect alone never confirms a seat.');
   if (!configured) {
-    await loadRoutes();
     return;
   }
   let generation = 0;
@@ -41,17 +41,20 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
       setTimeout(async () => {
         try {
           const user = await api('/api/me', {auth: true});
-          if (request === generation) setAccount(user);
+          if (request === generation) {
+            setAccount(user);
+            await loadRoutes();
+          }
         } catch {
           if (request === generation) showToast('Account services are temporarily unavailable.');
         }
       }, 0);
     }
   });
-  await loadRoutes();
 }
 
 export function applyRoleNavigation(){
+  showDevAccount(state.user);
   const role=state.user?.role;
   $('driverNav').classList.toggle('hidden',role!=='driver');
   $('opsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
