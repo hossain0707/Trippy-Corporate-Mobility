@@ -120,7 +120,7 @@
         <div class="help-banner"><div><span class="help-eyebrow">SHAPE THE NETWORK</span><b>Your route isn't here yet?</b><p>Request a new stop, route or additional seats. We use demand to plan what runs next.</p></div><button id="demandBtn" type="button" class="outline-white">Request a stop or route ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
       </section>
       </div>
-      <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>My bookings</h2></div></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to view your bookings.</div></div></section>
+      <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>My bookings</h2></div><button type="button" class="theam-track-link" id="theamTrackRide">Track My Ride →</button></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to view your bookings.</div></div></section>
       <section class="content hidden" id="pageTracking"><div class="section-head"><div><div class="eyebrow muted">LIVE LOCATION</div><h2>Track your assigned ride</h2></div></div><p class="helper-copy">Live tracking is available for confirmed, paid bookings when the assigned driver is sharing their location.</p><div id="trackList" class="pass-list"></div><div id="trackResult" class="track-box hidden"></div></section>
       <section class="content hidden" id="pageDriver"><div class="section-head"><div><div class="eyebrow muted">AUTHORIZED DRIVER</div><h2>Today's assigned services</h2></div></div><p class="helper-copy">Share your location only during assigned trips. Browser GPS is suitable for testing; production operations require a reliable approved tracking device or driver app.</p><div id="driverServices" class="pass-list"></div><div id="driverStatus" class="track-box hidden"></div></section>
       <section class="content hidden" id="pageOps">
@@ -134,6 +134,8 @@
               <button type="button" data-ops-section="fleet">▣ &nbsp; Fleet &amp; Vehicles</button>
               <button type="button" data-ops-section="scheduling">▦ &nbsp; Scheduling</button>
               <button type="button" data-ops-section="bookings">▤ &nbsp; Bookings</button>
+              <button type="button" data-ops-section="passengers">♧ &nbsp; Passengers</button>
+              <button type="button" data-ops-section="operations">⌖ &nbsp; Operations</button>
               <button type="button" data-ops-section="analytics">▥ &nbsp; Reports &amp; Analytics</button>
               <button type="button" data-ops-section="settings">⚙ &nbsp; Operations Settings</button>
             </nav>
@@ -161,6 +163,7 @@
               <section class="theam-ops-panel ops-section" id="theamOpsAnalyticsSection"><h3>Demand Insights</h3><div id="theamOpsDemandInsights"></div></section>
               <section class="theam-ops-panel ops-section" id="theamOpsCandidatesSection"><h3>Route Planning Candidates</h3><p class="theam-ops-subtitle">Grouped passenger requests for staff review — not automatic AI recommendations.</p><div id="theamOpsCandidates"></div></section>
             </div>
+            <div class="theam-ops-passengers" id="theamOpsPassengerSection" aria-live="polite"></div>
             <div class="theam-ops-management">
               <div class="ops-section" id="theamOpsDemandSection"><h3>Requests &amp; Demand — Review Queue</h3><div id="opsDemand" class="pass-list"></div></div>
               <div class="ops-section" id="theamOpsServicesSection"><h3>Scheduled Services</h3><div id="opsServices" class="pass-list"></div></div>
@@ -172,9 +175,10 @@
     </main>
     <footer><span>TRIPPY CORPORATE</span><span>Smarter planning. Better everyday journeys.</span><span>© 2026 TRIPPY</span></footer>
     <nav class="mobile-bottom-nav" aria-label="Quick navigation">
-      <button type="button" class="mobile-nav-btn active" data-page="search"><span aria-hidden="true">⌂</span>Explore</button>
-      <button type="button" class="mobile-nav-btn" data-page="passes"><span aria-hidden="true">▣</span>Bookings</button>
-      <button type="button" class="mobile-nav-btn" data-page="tracking"><span aria-hidden="true">⌖</span>Track</button>
+      <button type="button" class="mobile-nav-btn active" data-page="search"><span aria-hidden="true">⌂</span>Home</button>
+      <button type="button" class="mobile-nav-btn" data-scroll="routeResults"><span aria-hidden="true">⌖</span>Routes</button>
+      <button type="button" class="mobile-nav-btn" data-page="passes"><span aria-hidden="true">▦</span>Bookings</button>
+      <button type="button" class="mobile-nav-btn" id="theamMobileProfile"><span aria-hidden="true">♙</span>Profile</button>
       <button type="button" class="mobile-nav-btn hidden" data-page="ops" id="mobileOpsNav"><span aria-hidden="true">☷</span>Operations</button>
     </nav>
   </div>
