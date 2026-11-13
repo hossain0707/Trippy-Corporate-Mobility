@@ -92,8 +92,10 @@ export function renderFeatured(services=[]){
 }
 export function initTheam(navigate){
   publicNavigate=navigate;
+  const requested=new URLSearchParams(window.location.search).get('view');
   const saved=window.localStorage.getItem('trippy-theam-view');
-  const initial=saved==='phone'||saved==='web'?saved:
+  const initial=requested==='phone'||requested==='web'?requested:
+    saved==='phone'||saved==='web'?saved:
     (window.matchMedia('(max-width:720px)').matches?'phone':'web');
   updateView(initial,false);
   $('theamPhoneView').onclick=()=>updateView('phone');
