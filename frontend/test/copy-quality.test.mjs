@@ -11,8 +11,12 @@ const locale = read('src/core/locale.js');
 
 test('customer homepage uses concise, truthful ride-search copy', () => {
   assert.match(home, /<h2>Where are you headed\?<\/h2>/);
-  assert.match(home, /Choose locations/);
-  assert.match(home, /Find your corridor/);
+  assert.match(home, /Tell us where you commute/);
+  assert.ok(home.includes('<em>TRIPPY</em> takes care of the ride.'));
+  assert.match(home, /id="theamWebView"/);
+  assert.match(home, /id="theamPhoneView"/);
+  assert.match(home, /id="theamPlanGrid"/);
+  assert.match(home, /id="theamOpsMap"/);
   assert.match(home, /<h2>Available rides<\/h2>/);
   assert.match(home, /<h2>My bookings<\/h2>/);
   assert.doesNotMatch(home, /All fares in Bangladeshi taka/);

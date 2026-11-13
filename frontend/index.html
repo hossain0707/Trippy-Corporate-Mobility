@@ -5,84 +5,180 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="theme-color" content="#123a30"/>
   <meta name="description" content="TRIPPY Corporate: shared commutes for Dhaka professionals."/>
-  <title>TRIPPY Corporate | A simpler way to commute</title>
+  <title>TRIPPY Corporate Mobility | Plan your commute</title>
+  <link rel="manifest" href="/manifest.webmanifest"/>
+  <link rel="icon" href="/theam/icon.svg" type="image/svg+xml"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
 <body>
   <div id="app">
-    <header class="site-header">
+    <header class="site-header" id="mainHeader">
       <div class="header-wrap">
-        <a class="logo" href="#search" aria-label="Trippy Corporate home"><span class="logo-mark">t</span><span>trippy<span class="logo-soft"> corporate</span></span></a>
-        <nav aria-label="Main navigation"><button type="button" class="nav-btn active" data-page="search">Find a ride</button><button type="button" class="nav-btn" data-page="passes">My bookings</button><button type="button" class="nav-btn" data-page="tracking">Live tracking</button><button type="button" class="nav-btn hidden" data-page="driver" id="driverNav">Driver console</button><button type="button" class="nav-btn hidden" data-page="ops" id="opsNav">Operations</button></nav>
-        <button class="nav-btn" id="languageBtn" type="button">বাংলা</button>
-        <button class="account-btn" id="accountBtn" type="button">Sign in</button>
+        <a class="logo" href="#search" aria-label="TRIPPY Corporate Mobility home"><span class="logo-mark">T</span><span>TRIPPY<small class="logo-soft">Corporate Mobility</small></span></a>
+        <nav class="theam-top-navigation" aria-label="Main navigation">
+          <button type="button" class="nav-btn active" data-page="search">Home</button>
+          <button type="button" class="nav-btn" data-scroll="theamFeatured">Routes</button>
+          <button type="button" class="nav-btn" data-scroll="theamPlans">Plans</button>
+          <button type="button" class="nav-btn" data-scroll="theamCorporate">For Companies</button>
+          <button type="button" class="nav-btn" data-scroll="theamHow">How It Works</button>
+          <button type="button" class="nav-btn" id="theamNavRequest">Request a Route</button>
+          <button type="button" class="nav-btn hidden" data-page="ops" id="opsNav">Operations</button>
+          <button type="button" class="nav-btn hidden" data-page="driver" id="driverNav">Driver console</button>
+          <button type="button" class="nav-btn hidden" data-page="passes">My bookings</button>
+          <button type="button" class="nav-btn hidden" data-page="tracking">Live tracking</button>
+        </nav>
+        <div class="theam-header-tools">
+          <button class="theam-language" id="languageBtn" type="button" aria-label="Change language">বাংলা</button>
+          <button class="theam-login account-btn" id="accountBtn" type="button">Sign In</button>
+          <button class="theam-get-started" id="theamGetStarted" type="button">Get Started <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+      <div class="theam-view-switch" role="group" aria-label="Choose TRIPPY interface view">
+        <span class="theam-view-label">Choose your view</span>
+        <button id="theamWebView" class="theam-view-button" type="button" aria-pressed="true">▣ Web View</button>
+        <button id="theamPhoneView" class="theam-view-button" type="button" aria-pressed="false">▯ Phone View</button>
       </div>
     </header>
     <main>
-      <section class="hero" id="hero">
-        <div class="hero-text">
-          <div class="hero-kicker"><span class="hero-spark">✦</span> BUILT FOR DHAKA'S DAILY COMMUTE</div>
-          <h1>One city.<span> Better journeys.</span></h1>
-          <p>Choose a seat on a planned route, travel between approved stops, or tell TRIPPY where you need to go next.</p>
-          <div class="hero-actions">
-            <button type="button" id="heroFindRide" class="hero-cta">Find my ride <span aria-hidden="true">↗</span></button>
-            <button type="button" id="heroSuggestRoute" class="hero-secondary">Request a route <span aria-hidden="true">→</span></button>
+      <div id="theamPublicShell">
+      <section class="hero" id="hero" aria-label="TRIPPY main homepage">
+        <div class="theam-hero-atmosphere" aria-hidden="true"></div>
+        <div class="theam-hero-main">
+          <div class="theam-hero-copy">
+            <div class="theam-hero-pill">▣ &nbsp; Dhaka's Corporate Commute Network</div>
+            <h1>Tell us where you commute.<br/><em>TRIPPY</em> takes care of the ride.</h1>
+            <p>Fixed-route, multi-stop transportation for companies and professionals in Dhaka — planned for the everyday commute.</p>
           </div>
-          <div class="hero-features"><span>✧ Your seat, your route</span><span>◷ Morning & return</span><span>⌖ Stops along the corridor</span></div>
+          <div class="theam-hero-scene" aria-hidden="true">
+            <span class="theam-handwriting">Commute Smarter<br/>in Dhaka</span>
+            <img src="/theam/coach.svg" alt="" class="theam-hero-coach"/>
+          </div>
         </div>
-        <div class="hero-visual" aria-label="Illustration of how a TRIPPY route connects multiple stops">
-          <div class="hero-visual-head"><span class="hero-visual-icon">t</span><span>HOW A CORRIDOR WORKS</span><span class="hero-visual-dot"></span></div>
-          <div class="hero-journey-title">One route. More places.</div>
-          <div class="hero-journey-subtitle">Illustrative journey · Not a live service</div>
-          <div class="hero-route-timeline" aria-hidden="true">
-            <div class="hero-route-line"></div>
-            <div class="hero-route-stop"><i></i><strong>Abdullahpur</strong><small>Start</small></div>
-            <div class="hero-route-stop"><i></i><strong>Uttara</strong><small>Board</small></div>
-            <div class="hero-route-stop"><i></i><strong>Banani</strong><small>Stop</small></div>
-            <div class="hero-route-stop"><i></i><strong>Motijheel</strong><small>End</small></div>
+        <div class="theam-hero-search">
+          <div class="theam-search-tabs" role="group" aria-label="Booking or requesting a route">
+            <button type="button" id="theamTabBook" class="theam-search-tab active">▣ &nbsp; Book a Ride</button>
+            <button type="button" id="theamTabBookings" class="theam-search-tab">▤ &nbsp; My Bookings</button>
+            <button type="button" id="theamTabRequest" class="theam-search-tab">⊕ &nbsp; Request a New Route</button>
           </div>
-          <div class="hero-route-foot">
-            <span>Each route has its own approved stops</span>
-            <span class="hero-route-symbol">↗</span>
-          </div>
+          <form id="searchForm" class="search-grid">
+            <div class="location-field"><label for="pickupLocation">From (Pickup)</label><div class="location-combobox"><input id="pickupLocation" name="pickup" type="text" placeholder="Search a pickup area in Dhaka" autocomplete="off" maxlength="100"/></div></div>
+            <div class="location-field"><label for="destinationLocation">To (Drop-off)</label><div class="location-combobox"><input id="destinationLocation" name="office" type="text" placeholder="Search a destination in Dhaka" autocomplete="off" maxlength="100"/></div></div>
+            <label class="theam-vehicle-field">Vehicle<select name="vehicleClass"><option value="">Bus · Hiace · Car</option><option value="bus">Bus</option><option value="hiace">Hiace</option><option value="car">Shared car</option></select></label>
+            <label class="theam-date-field">Start date<input id="startDate" name="startDate" type="date" required/></label>
+            <label class="theam-plan-field">Travel Plan<select id="months" name="months"><option value="1">Monthly</option><option value="3">3 Months · Save 25%</option><option value="6">6 Months · Save 30%</option><option value="12">12 Months · Save 35%</option></select></label>
+            <button class="search-submit" type="submit">⌕ &nbsp; Find My Ride</button>
+          </form>
+        </div>
+        <div class="theam-hero-benefits">
+          <div><span>⌖</span><b>Fixed &amp; Planned Routes</b><small>Multiple approved stops</small></div>
+          <div><span>▤</span><b>Choose Your Seat</b><small>Vehicle-specific layouts</small></div>
+          <div><span>▦</span><b>Monthly Plans</b><small>Save up to 35%</small></div>
+          <div><span>◇</span><b>Safety First</b><small>Verified fleet required</small></div>
+          <div><span>♧</span><b>Request New Routes</b><small>Demand-driven planning</small></div>
         </div>
       </section>
-      <section class="content" id="pageSearch">
-        <div class="booking-guide" aria-label="Booking steps">
-          <div><span class="booking-guide-num">01</span><strong>Choose locations</strong></div>
-          <span class="booking-guide-arrow">→</span>
-          <div><span class="booking-guide-num">02</span><strong>Find your corridor</strong></div>
-          <span class="booking-guide-arrow">→</span>
-          <div><span class="booking-guide-num">03</span><strong>Select a seat</strong></div>
-          <span class="booking-guide-arrow">→</span>
-          <div><span class="booking-guide-num">04</span><strong>Book securely</strong></div>
+      <div class="theam-showcase" id="theamFeatured">
+        <section class="theam-featured-card">
+          <div class="theam-showcase-head"><span class="theam-featured-label">★ Featured Corridor</span><span id="theamFeaturedStatus" class="theam-sample-tag">Illustrative route</span></div>
+          <div id="theamFeaturedContent" class="theam-featured-content">
+            <div class="theam-vehicle-preview"><img src="/theam/coach.svg" alt="White and green TRIPPY coach illustration"/></div>
+            <div class="theam-route-preview">
+              <h2>Abdullahpur → Motijheel</h2>
+              <p>Morning pickup · Evening return · Monthly plan</p>
+              <div class="theam-stop-track"><span>Abdullahpur</span><span>Uttara</span><span>Banani</span><span>Mohakhali</span><span>Farmgate</span><span>Motijheel</span></div>
+              <small class="theam-illustration-note">Example corridor for design preview; no active vehicle is implied.</small>
+            </div>
+          </div>
+          <button type="button" id="theamFeaturedAction" class="theam-featured-action">View routes &amp; schedules →</button>
+        </section>
+        <section class="theam-plan-card" id="theamPlans">
+          <div class="theam-showcase-head"><h2>Choose a Monthly Plan</h2><small>Save more with longer plans</small></div>
+          <div id="theamPlanGrid" class="theam-plan-options" aria-label="Subscription length"></div>
+        </section>
+      </div>
+      <section class="theam-how" id="theamHow" aria-label="How TRIPPY works">
+        <h2>How TRIPPY Works</h2>
+        <div class="theam-how-steps">
+          <div><span>⌖</span><strong>1. Find Your Route</strong><small>Choose pickup &amp; drop-off</small></div>
+          <div><span>▤</span><strong>2. Select Your Seat</strong><small>Choose available numbered seats</small></div>
+          <div><span>▦</span><strong>3. Choose a Plan</strong><small>Monthly, 3, 6 or 12 months</small></div>
+          <div><span>▣</span><strong>4. Commute with TRIPPY</strong><small>Board at your approved stop</small></div>
         </div>
-        <div class="section-head"><div><div class="eyebrow muted">YOUR DAILY ROUTE</div><h2>Where are you headed?</h2></div>
-          <span class="section-note">Find any two stops on an available corridor</span></div>
-        <form id="searchForm" class="search-grid">
-          <div class="location-field"><label for="pickupLocation">Pickup area</label><div class="location-combobox"><input id="pickupLocation" name="pickup" type="text" placeholder="Search in Dhaka, e.g. Uttara Sector 7" autocomplete="off" maxlength="100"/></div></div>
-          <div class="location-field"><label for="destinationLocation">Destination</label><div class="location-combobox"><input id="destinationLocation" name="office" type="text" placeholder="Search in Dhaka, e.g. Banani" autocomplete="off" maxlength="100"/></div></div>
-          <label>Vehicle type<select name="vehicleClass"><option value="">All vehicle types</option><option value="bus">Bus</option><option value="hiace">Hiace</option><option value="car">Shared car</option></select></label>
-          <label>Start date<input id="startDate" name="startDate" type="date" required/></label>
-          <label>Subscription length<select id="months" name="months"><option value="1">1 month</option><option value="3">3 months · 25% off</option><option value="6">6 months · 30% off</option><option value="12">12 months · 35% off</option></select></label>
-          <button class="search-submit" type="submit">Search rides ↗</button>
-        </form>
+      </section>
+      <section class="theam-company-band" id="theamCorporate">
+        <div><span>FOR COMPANIES &amp; TEAMS</span><h2>Your team's daily commute, planned around real demand.</h2></div>
+        <button type="button" id="theamCompanyRequest" class="theam-company-cta">Request a Corporate Route →</button>
+      </section>
+      <section class="content" id="pageSearch">
+        <div class="section-head"><div><div class="eyebrow muted">YOUR DAILY ROUTE</div><h2>Where are you headed?</h2></div><span class="section-note">Search any approved intermediate stop on a corridor</span></div>
         <div class="section-head gap-top"><div><div class="eyebrow muted">ROUTES & VEHICLES</div><h2>Available rides</h2></div><span id="resultCount" class="section-note" aria-live="polite"></span></div>
         <div id="routeResults" class="route-grid" aria-live="polite"><div class="empty-message">Finding available rides…</div></div>
         <div class="help-banner"><div><span class="help-eyebrow">SHAPE THE NETWORK</span><b>Your route isn't here yet?</b><p>Request a new stop, route or additional seats. We use demand to plan what runs next.</p></div><button id="demandBtn" type="button" class="outline-white">Request a stop or route ↗</button><button id="supportBtn" type="button" class="outline-white">Report a concern</button></div>
       </section>
-      <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>My bookings</h2></div></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to view your bookings.</div></div></section>
+      </div>
+      <section class="content hidden" id="pagePasses"><div class="section-head"><div><div class="eyebrow muted">MY TRIPPY</div><h2>My bookings</h2></div><button type="button" class="theam-track-link" id="theamTrackRide">Track My Ride →</button></div><div id="passList" class="pass-list"><div class="empty-message">Sign in to view your bookings.</div></div></section>
       <section class="content hidden" id="pageTracking"><div class="section-head"><div><div class="eyebrow muted">LIVE LOCATION</div><h2>Track your assigned ride</h2></div></div><p class="helper-copy">Live tracking is available for confirmed, paid bookings when the assigned driver is sharing their location.</p><div id="trackList" class="pass-list"></div><div id="trackResult" class="track-box hidden"></div></section>
       <section class="content hidden" id="pageDriver"><div class="section-head"><div><div class="eyebrow muted">AUTHORIZED DRIVER</div><h2>Today's assigned services</h2></div></div><p class="helper-copy">Share your location only during assigned trips. Browser GPS is suitable for testing; production operations require a reliable approved tracking device or driver app.</p><div id="driverServices" class="pass-list"></div><div id="driverStatus" class="track-box hidden"></div></section>
-      <section class="content hidden" id="pageOps"><div class="section-head"><div><div class="eyebrow muted">FLEET CONTROL</div><h2>Operations overview</h2></div></div><div id="opsDashboard" class="ops-kpis"></div><div class="ops-section"><h3>Route requests</h3><div id="opsDemand" class="pass-list"></div></div><div class="ops-section"><h3>Scheduled services</h3><div id="opsServices" class="pass-list"></div></div><div id="opsBuilder" class="ops-section"></div></section>
+      <section class="content hidden" id="pageOps">
+        <div class="theam-ops-shell">
+          <aside class="theam-ops-sidebar" aria-label="Operations sections">
+            <div class="theam-ops-brand"><span class="logo-mark">T</span><span>TRIPPY<small>Corporate Mobility</small></span></div>
+            <nav class="theam-ops-menu" id="theamOpsMenu" aria-label="Staff workspace">
+              <button type="button" class="active" data-ops-section="overview">⌂ &nbsp; Overview</button>
+              <button type="button" data-ops-section="routes">⌘ &nbsp; Routes &amp; Stops</button>
+              <button type="button" data-ops-section="demand">▤ &nbsp; Requests &amp; Demand</button>
+              <button type="button" data-ops-section="fleet">▣ &nbsp; Fleet &amp; Vehicles</button>
+              <button type="button" data-ops-section="scheduling">▦ &nbsp; Scheduling</button>
+              <button type="button" data-ops-section="bookings">▤ &nbsp; Bookings</button>
+              <button type="button" data-ops-section="passengers">♧ &nbsp; Passengers</button>
+              <button type="button" data-ops-section="operations">⌖ &nbsp; Operations</button>
+              <button type="button" data-ops-section="analytics">▥ &nbsp; Reports &amp; Analytics</button>
+              <button type="button" data-ops-section="settings">⚙ &nbsp; Operations Settings</button>
+            </nav>
+            <button type="button" class="theam-ops-back" data-page="search">← Back to Customer Website</button>
+            <div class="theam-ops-sidebar-foot"><b>TRIPPY</b><p>Running Dhaka's corporate commute, corridor by corridor.</p><img src="/theam/coach.svg" alt="Decorative bus illustration"/></div>
+          </aside>
+          <div class="theam-ops-main">
+            <header class="theam-ops-topbar">
+              <div><span>PLAN &nbsp; • &nbsp; OPERATE &nbsp; • &nbsp; OPTIMIZE &nbsp; • &nbsp; EXPAND</span><h1>Operations Dashboard</h1></div>
+              <div class="theam-ops-header-actions"><input id="theamOpsSearch" type="search" placeholder="Search routes, vehicles or requests…" aria-label="Search the current operations lists"/><span class="theam-ops-admin-icon" aria-hidden="true">T</span><b>Operations</b></div>
+            </header>
+            <div id="opsDashboard" class="ops-kpis theam-ops-kpis"></div>
+            <div class="theam-ops-center">
+              <section class="theam-ops-route-panel" id="theamOpsRoutePanel">
+                <div class="theam-ops-route-details" id="theamOpsRouteDetails"><span class="theam-ops-route-badge">TRANSPORT NETWORK</span><h2>Route Overview</h2><p>Approved routes and stops will appear here.</p></div>
+                <div class="theam-ops-map" id="theamOpsMap" aria-label="Route illustration or verified stop map"><div class="theam-ops-map-placeholder">Preparing route view…</div></div>
+              </section>
+              <div class="theam-ops-sidecards">
+                <section class="theam-ops-panel" id="theamOpsVehiclePanel"><h3>Vehicle Assignment</h3><div id="theamOpsVehicleContent"></div></section>
+                <section class="theam-ops-panel" id="theamOpsStatusPanel"><h3>Service Status</h3><div id="theamOpsServiceStatus"></div></section>
+              </div>
+            </div>
+            <div class="theam-ops-bottom">
+              <section class="theam-ops-panel ops-section" id="theamOpsRequestsSection"><div class="theam-ops-panel-header"><h3>Passenger Requests</h3><button type="button" data-ops-section="demand">View All →</button></div><div id="theamOpsRequestsSummary"></div></section>
+              <section class="theam-ops-panel ops-section" id="theamOpsAnalyticsSection"><h3>Demand Insights</h3><div id="theamOpsDemandInsights"></div></section>
+              <section class="theam-ops-panel ops-section" id="theamOpsCandidatesSection"><h3>Route Planning Candidates</h3><p class="theam-ops-subtitle">Grouped passenger requests for staff review — not automatic AI recommendations.</p><div id="theamOpsCandidates"></div></section>
+            </div>
+            <div class="theam-ops-passengers" id="theamOpsPassengerSection" aria-live="polite"></div>
+            <div class="theam-ops-management">
+              <div class="ops-section" id="theamOpsDemandSection"><h3>Requests &amp; Demand — Review Queue</h3><div id="opsDemand" class="pass-list"></div></div>
+              <div class="ops-section" id="theamOpsServicesSection"><h3>Scheduled Services</h3><div id="opsServices" class="pass-list"></div></div>
+              <div id="opsBuilder" class="ops-section"></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
     <footer><span>TRIPPY CORPORATE</span><span>Smarter planning. Better everyday journeys.</span><span>© 2026 TRIPPY</span></footer>
     <nav class="mobile-bottom-nav" aria-label="Quick navigation">
-      <button type="button" class="mobile-nav-btn active" data-page="search"><span aria-hidden="true">⌂</span>Explore</button>
-      <button type="button" class="mobile-nav-btn" data-page="passes"><span aria-hidden="true">▣</span>Bookings</button>
-      <button type="button" class="mobile-nav-btn" data-page="tracking"><span aria-hidden="true">⌖</span>Track</button>
+      <button type="button" class="mobile-nav-btn active" data-page="search"><span aria-hidden="true">⌂</span>Home</button>
+      <button type="button" class="mobile-nav-btn" data-scroll="routeResults"><span aria-hidden="true">⌖</span>Routes</button>
+      <button type="button" class="mobile-nav-btn" data-page="passes"><span aria-hidden="true">▦</span>Bookings</button>
+      <button type="button" class="mobile-nav-btn" id="theamMobileProfile"><span aria-hidden="true">♙</span>Profile</button>
       <button type="button" class="mobile-nav-btn hidden" data-page="ops" id="mobileOpsNav"><span aria-hidden="true">☷</span>Operations</button>
     </nav>
   </div>

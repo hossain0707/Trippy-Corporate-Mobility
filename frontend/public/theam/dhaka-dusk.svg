@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 680" preserveAspectRatio="xMidYMid slice">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#082a38"/><stop offset=".37" stop-color="#21667d"/><stop offset=".66" stop-color="#d79489"/><stop offset="1" stop-color="#f4ae7d"/></linearGradient>
+ <linearGradient id="road" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#11252e"/><stop offset=".45" stop-color="#234f60"/><stop offset="1" stop-color="#071e26"/></linearGradient>
+ <linearGradient id="forest" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1b755c"/><stop offset=".85" stop-color="#06392e"/><stop offset="1" stop-color="#06332b"/></linearGradient>
+ <pattern id="lit" patternUnits="userSpaceOnUse" width="22" height="28"><rect x="5" y="7" width="6" height="13" fill="#ffe7ac" opacity=".3"/><rect x="15" y="6" width="3" height="9" fill="#b9ffff" opacity=".28"/></pattern>
+ <filter id="blur"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="1640" height="680" fill="url(#sky)"/>
+<path d="M0 275C330 243 583 278 801 254S1268 225 1640 258V530H0Z" fill="#0b5668" opacity=".32"/>
+<!-- layered skyline -->
+<g fill="#2e5660" opacity=".75">
+<path d="M0 205H75V260H122V171H196V231H255V155H311V240H350V195H410V272H467V138H520V252H573V177H650V249H680V209H770V261H845V155H911V250H958V193H1050V251H1112V145H1189V252H1212V191H1303V251H1354V150H1418V270H1492V171H1573V255H1640V370H0Z"/>
+</g>
+<g fill="#1b4553">
+<path d="M0 243H83V301H160V193H224V288H286V211H330V295H414V168H485V284H554V209H626V310H695V198H748V286H806V179H861V298H921V235H990V295H1044V194H1127V282H1163V207H1243V304H1308V193H1377V295H1424V215H1500V288H1560V223H1640V404H0Z"/>
+</g>
+<path d="M0 225H1640V387H0Z" fill="url(#lit)" opacity=".65"/>
+<!-- metro train viaduct -->
+<path d="M0 289Q730 305 1640 337" stroke="#b9bdab" stroke-width="30" fill="none"/>
+<path d="M0 297Q730 313 1640 345" stroke="#26434c" stroke-width="7" fill="none"/>
+<path d="M300 309L293 499M741 320L741 510M1180 336L1188 531" stroke="#93a89e" stroke-width="25" opacity=".7"/>
+<path d="M23 271Q615 271 1010 305" stroke="#f2f6ee" stroke-width="13" stroke-linecap="round" fill="none"/>
+<path d="M29 266Q615 265 1009 300" stroke="#10b888" stroke-width="4" stroke-linecap="round" fill="none"/>
+<!-- trees and green verge -->
+<path d="M0 373Q320 345 526 396T1069 387T1640 416V561H0Z" fill="#105141"/>
+<g fill="url(#forest)">
+<circle cx="28" cy="340" r="97"/><circle cx="125" cy="353" r="85"/><circle cx="267" cy="367" r="73"/><circle cx="411" cy="366" r="73"/><circle cx="559" cy="379" r="59"/>
+<circle cx="1058" cy="377" r="57"/><circle cx="1186" cy="378" r="72"/><circle cx="1350" cy="353" r="91"/><circle cx="1540" cy="358" r="105"/><circle cx="1660" cy="334" r="115"/>
+</g>
+<g fill="#45a971" opacity=".42">
+<circle cx="46" cy="320" r="64"/><circle cx="275" cy="347" r="52"/><circle cx="412" cy="342" r="40"/><circle cx="1540" cy="325" r="71"/>
+</g>
+<!-- sweeping city avenue -->
+<path d="M0 501Q497 448 872 492Q1191 519 1640 474V680H0Z" fill="url(#road)"/>
+<path d="M0 508Q500 454 875 502Q1190 529 1640 482" fill="none" stroke="#8d9d95" stroke-width="12"/>
+<path d="M0 563Q500 511 873 548Q1200 583 1640 529" fill="none" stroke="#e6d8ad" stroke-width="3" stroke-dasharray="43 34" opacity=".75"/>
+<path d="M0 645Q480 579 875 619Q1250 665 1640 600" fill="none" stroke="#cfe3cf" stroke-width="4" stroke-dasharray="54 44" opacity=".65"/>
+<g filter="url(#blur)" opacity=".55"><ellipse cx="1177" cy="490" rx="70" ry="8" fill="#ffe8a2"/><ellipse cx="1360" cy="510" rx="55" ry="7" fill="#ff8349"/><ellipse cx="505" cy="523" rx="80" ry="5" fill="#fff0c6"/></g>
+<!-- atmospheric green wash -->
+<rect width="1640" height="680" fill="#003d36" opacity=".1"/>
+</svg>
