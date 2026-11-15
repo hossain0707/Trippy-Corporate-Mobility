@@ -13,6 +13,7 @@ import {initializeDhakaLocations} from './features/locations/index.js';
 import './features/demand/index.js';
 import './features/support/index.js';
 import {initTheam} from './features/theam/index.js';
+import {initializeDevGate,showDevAccount} from './core/dev-gate.js';
 function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGPS();state.page=page;document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
   ['search','passes','tracking','driver','ops'].forEach(p=>$('page'+p[0].toUpperCase()+p.slice(1)).classList.toggle('hidden',p!==page));
   $('theamPublicShell').classList.toggle('hidden',page!=='search');
@@ -23,11 +24,12 @@ function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGP
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+const isDevGate=initializeDevGate();
 initTheam(setPage);
 async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomorrow;$('startDate').min=dhakaDay();$('startDate').max=dhakaDay(60);
   if(new URLSearchParams(location.search).get('payment'))showToast('Payment processing. Check My passes after provider verification. A browser redirect alone never confirms a seat.');
   if (!configured) {
-    await loadRoutes();
+    if(!isDevGate)await loadRoutes();
     return;
   }
   let generation = 0;
@@ -48,17 +50,21 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
       setTimeout(async () => {
         try {
           const user = await api('/api/me', {auth: true});
-          if (request === generation) setAccount(user);
+          if (request === generation) {
+            setAccount(user);
+            if(isDevGate)await loadRoutes();
+          }
         } catch {
           if (request === generation) showToast('Account services are temporarily unavailable.');
         }
       }, 0);
     }
   });
-  await loadRoutes();
+  if(!isDevGate)await loadRoutes();
 }
 
 export function applyRoleNavigation(){
+  if(isDevGate)showDevAccount(state.user);
   const role=state.user?.role;
   $('driverNav').classList.toggle('hidden',role!=='driver');
   $('opsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
