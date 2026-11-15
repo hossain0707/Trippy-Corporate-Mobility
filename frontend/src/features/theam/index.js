@@ -2,14 +2,15 @@
  * No booking/payment rules are implemented here. All live data comes from FastAPI.
  * The screen-size toggle changes presentation only; it never changes inventory.
  */
-import {$,node,state,formatBdt,formatTime} from '../../core/context.js';
+import {$,node,state,loadPricing,formatBdt,formatTime,vehicleNames} from '../../core/context.js';
+import {subscriptionQuote} from '../../core/pricing.js';
 import {t} from '../../core/locale.js';
 
 const plans=[
-  {months:1,discount:20,label:'1 Month'},
-  {months:3,discount:25,label:'3 Months'},
-  {months:6,discount:30,label:'6 Months'},
-  {months:12,discount:35,label:'12 Months'},
+  {months:1,label:'1 Month'},
+  {months:3,label:'3 Months'},
+  {months:6,label:'6 Months'},
+  {months:12,label:'12 Months'},
 ];
 
 let publicNavigate=null;
@@ -29,22 +30,20 @@ const goHome=target=>{
   requestAnimationFrame(()=>scrollTo(target||'hero'));
 };
 
-function makePlanCard(plan){
+function makePlanCard(plan,vehicle,isExample){
   const select=$('months'),current=Number(select?.value||1);
   const selected=current===plan.months;
-  const baseBus=5000;
-  const intro=plan.months===1;
-  const discount=plan.discount;
-  const monthly=intro?baseBus:baseBus*(100-discount/100);
+  const {discount,monthly,total}=subscriptionQuote(state.pricing,vehicle,plan.months,state.user && !state.user.welcome_redeemed_at);
   const button=node('button',{type:'button',
     className:'theam-plan-choice'+(selected?' selected':''),
     'aria-pressed':String(selected),'aria-label':plan.label+' subscription'});
   const label=node('b',{},plan.label);
-  const badge=node('span',{className:'theam-plan-discount'},intro?'20% welcome':discount+'% OFF');
+  const badge=node('span',{className:'theam-plan-discount'},discount ? discount+'% '+(plan.months===1?'welcome':'OFF') : 'Standard fare');
   const price=node('strong',{},formatBdt(monthly));
-  const sub=node('small',{},intro?'New-rider fare from ৳4,000':'per month · bus example');
+  const sub=node('small',{},'per month · '+vehicleNames[vehicle]+(isExample?' example':''));
   const call=node('span',{className:'theam-plan-select'},selected?'Selected ✓':'Select');
-  button.append(label,badge,price,sub,call);
+  button.append(label,badge,price,sub,
+    node('small',{},formatBdt(total)+' total for '+plan.label),call);
   button.onclick=()=>{
     select.value=String(plan.months);
     renderPlans();
@@ -55,7 +54,12 @@ function makePlanCard(plan){
 export function renderPlans(){
   const target=$('theamPlanGrid');
   if(!target)return;
-  target.replaceChildren(...plans.map(makePlanCard));
+  if(!state.pricing){
+    target.replaceChildren(node('p',{role:'status'},state.pricingFailed?'Subscription prices are temporarily unavailable.':'Loading subscription prices…'));
+    return;
+  }
+  const selectedVehicle=$('searchForm').elements.namedItem('vehicleClass').value;
+  target.replaceChildren(...plans.map(plan=>makePlanCard(plan,selectedVehicle||'hiace',!selectedVehicle)));
 }
 export function renderFeatured(services=[]){
   const target=$('theamFeaturedContent');
@@ -116,6 +120,8 @@ export function initTheam(navigate){
     button.onclick=()=>goHome(button.dataset.scroll);
   });
   $('months').addEventListener('change',renderPlans);
+  $('searchForm').elements.namedItem('vehicleClass').addEventListener('change',renderPlans);
+  loadPricing().catch(()=>{state.pricingFailed=true;}).then(renderPlans);
   document.addEventListener('trippy:routes-loaded',event=>renderFeatured(event.detail?.services||[]));
   renderPlans();
   renderFeatured([]);

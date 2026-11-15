@@ -1,5 +1,5 @@
 import {t,localText,locale} from '../../core/locale.js';
-import {$,node,state,configured,api,vehicleNames,formatBdt,formatTime} from '../../core/context.js';
+import {$,node,state,configured,api,loadPricing,vehicleNames,formatBdt,formatTime} from '../../core/context.js';
 import {openSeats} from '../booking/index.js';
 import {demoCard} from '../demo/index.js';
 import {locationSearchTerm} from '../locations/index.js';
@@ -22,6 +22,7 @@ export async function loadRoutes(){
   const [realResult,demoResult]=await Promise.allSettled([
     api('/api/services'+(params.size?'?'+params:'')),
     api('/api/demo/services'),
+    loadPricing(),
   ]);
   const real=realResult.status==='fulfilled'?realResult.value:[];
   const demo=demoResult.status==='fulfilled'
@@ -81,8 +82,10 @@ function routeCard(s){
     'Select your approved boarding and drop-off stops to check seats for just your journey.');
   const bottom=node('div',{className:'route-bottom'});
   const price=node('div');
-  price.append(node('b',{},formatBdt({bus:5000,hiace:6500,car:8000}[s.vehicle_class])),
-    node('small',{},'per month · before discounts'));
+  const monthly=state.pricing?.monthly[s.vehicle_class];
+  if(monthly!==undefined){
+    price.append(node('b',{},formatBdt(monthly)),node('small',{},'per month · before discounts'));
+  }
   const button=node('button',{type:'button'},'Choose stops & seat ↗');
   button.onclick=()=>openSeats(s);
   bottom.append(price,button);

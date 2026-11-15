@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter,Query
 from ...core.database import connection,one,rows
 from ...core.errors import fail
-from ..booking.pricing import end_date,MONTHLY
+from ..booking.pricing import end_date,MONTHLY,DISCOUNTS,WELCOME_DISCOUNT
 from ..booking.corridors import segment_orders
 
 router=APIRouter(prefix='/api',tags=['Route catalog'])
@@ -28,7 +28,7 @@ def public_approved_stops(q: str = Query(min_length=2, max_length=80)):
 
 @router.get('/pricing')
 def pricing():
-    return {'currency':'BDT','monthly':MONTHLY,'discounts':{'firstMonth':20,'threeMonths':25,'sixMonths':30,'twelveMonths':35},'stackable':False}
+    return {'currency':'BDT','monthly':MONTHLY,'discounts':{'firstMonth':WELCOME_DISCOUNT,'threeMonths':DISCOUNTS[3],'sixMonths':DISCOUNTS[6],'twelveMonths':DISCOUNTS[12]},'stackable':False}
 
 @router.get('/services')
 def services(pickup:str|None=None,office:str|None=None,vehicleClass:str|None=None):

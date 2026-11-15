@@ -12,7 +12,7 @@ import {initializeLanguage} from './core/locale.js';
 import {initializeDhakaLocations} from './features/locations/index.js';
 import './features/demand/index.js';
 import './features/support/index.js';
-import {initTheam} from './features/theam/index.js';
+import {initTheam,renderPlans} from './features/theam/index.js';
 import {initializeDevGate,showDevAccount,showDevAccountError} from './core/dev-gate.js';
 function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGPS();state.page=page;document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
   ['search','passes','tracking','driver','ops'].forEach(p=>$('page'+p[0].toUpperCase()+p.slice(1)).classList.toggle('hidden',p!==page));
@@ -67,6 +67,7 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
 }
 
 export function applyRoleNavigation(){
+  renderPlans();
   if(isDevGate)showDevAccount(state.user);
   const role=state.user?.role;
   $('driverNav').classList.toggle('hidden',role!=='driver');

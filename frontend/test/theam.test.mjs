@@ -1,3 +1,4 @@
+import {subscriptionQuote} from '../src/core/pricing.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
@@ -49,13 +50,17 @@ test('admin view follows approved reference and still uses authenticated operati
   assert.match(preview,/noindex,nofollow/);
 });
 
-test('plan designs use established fares and distinguish the welcome-only discount',()=>{
-  assert.match(theme,/baseBus=5000/);
-  assert.match(theme,/20% welcome/);
-  assert.match(theme,/New-rider fare from ৳4,000/);
-  assert.match(theme,/months:3,discount:25/);
-  assert.match(theme,/months:6,discount:30/);
-  assert.match(theme,/months:12,discount:35/);
+test('subscription pricing uses the selected vehicle and applies each discount once',()=>{
+  const pricing={monthly:{bus:5000,hiace:6500,car:8000},discounts:{firstMonth:20,threeMonths:25,sixMonths:30,twelveMonths:35}};
+  for(const [months,monthly,total] of [[1,5200,5200],[3,4875,14625],[6,4550,27300],[12,4225,50700]]){
+    const quote=subscriptionQuote(pricing,'hiace',months,true);
+    assert.equal(quote.monthly,monthly);
+    assert.equal(quote.total,total);
+  }
+  assert.equal(subscriptionQuote(pricing,'hiace',1,false).total,6500);
+  assert.equal(subscriptionQuote(pricing,'bus',3,true).monthly,3750);
+  assert.equal(subscriptionQuote(pricing,'car',12,true).monthly,5200);
+  assert.match(theme,/loadPricing\(\)/);
   assert.match(search,/trippy:routes-loaded/);
 });
 

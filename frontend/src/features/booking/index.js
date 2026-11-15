@@ -1,5 +1,6 @@
 import {t,localText} from '../../core/locale.js';
-import {$,node,state,api,formatBdt,vehicleNames,durationLabels,showToast,showModal,closeModal,formatTime} from '../../core/context.js';
+import {$,node,state,api,loadPricing,formatBdt,vehicleNames,durationLabels,showToast,showModal,closeModal,formatTime} from '../../core/context.js';
+import {subscriptionQuote} from '../../core/pricing.js';
 import {getSearch} from '../search/index.js';
 import {openLogin} from '../auth/index.js';
 import {seatLayout} from './seatMap.js';
@@ -81,18 +82,17 @@ export async function openSeats(summary){
     body.append(seatHolder);
     const chosenText=node('p',{className:'status-note'},'Select your boarding stops to see available seats.');
     body.append(chosenText);
-    const isFirst=!state.user||!state.user.welcome_redeemed_at;
-    const discounts={1:isFirst?20:0,3:25,6:30,12:35};
-    const base={bus:5000,hiace:6500,car:8000}[summary.vehicle_class]*months;
-    const discount=discounts[months];
+    const pricing=await loadPricing();
+    const {base,discount,monthly,total}=subscriptionQuote(pricing,summary.vehicle_class,months,state.user && !state.user.welcome_redeemed_at);
     const fare=node('div',{className:'fare-breakdown'});
     const line=(label,value,cls='fare-line')=>{
       const row=node('div',{className:cls});
       row.append(node('span',{},label),node('strong',{},value));return row;
     };
     fare.append(line('Plan price',formatBdt(base)),
-      line('Estimated savings ('+discount+'%)','− '+formatBdt(base*discount/100)),
-      line('Estimated total',formatBdt(base*(100-discount)/100),'fare-line total'));
+      line('Estimated savings ('+discount+'%)','− '+formatBdt(base-total)),
+      line('Estimated price per month',formatBdt(monthly)),
+      line('Estimated total',formatBdt(total),'fare-line total'));
     body.append(fare);
     const actions=node('div',{className:'modal-actions'}),
       cancel=node('button',{className:'outline',type:'button'},'Cancel'),
@@ -178,6 +178,7 @@ async function showCheckout(held,seatLabel,summary){showModal('Seat reserved tem
   box.append(node('h3',{},`${summary.code} · Seat ${seatLabel}`),node('p',{},`Subscription: ${held.months} month(s). Seat held until ${new Date(held.holdExpiresAt).toLocaleString('en-BD',{timeZone:'Asia/Dhaka'})} Dhaka time.`));body.append(box);
   const line=(a,b)=>{const r=node('div',{className:'fare-line'});r.append(node('span',{},a),node('strong',{},b));return r};
   body.append(line('Plan price',formatBdt(held.baseAmountBdt)),line(`Savings (${held.discountPercent}%)`,formatBdt(held.baseAmountBdt-held.amountBdt)));
+  body.append(line('Price per month',formatBdt(held.amountBdt/held.months)));
   const total=line('Total to pay',formatBdt(held.amountBdt));total.classList.add('total');body.append(total);
   body.append(node('p',{className:'notice'},'Your booking is confirmed only after successful payment verification. Unpaid seat holds expire automatically.'));
   const actions=node('div',{className:'modal-actions'}),back=node('button',{className:'outline',type:'button'},'Close'),pay=node('button',{className:'primary',type:'button'},'Proceed to secure payment ↗');

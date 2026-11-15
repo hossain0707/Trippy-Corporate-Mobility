@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from ...core.clock import today as dhaka_today
 
 MONTHLY={'bus':5000,'hiace':6500,'car':8000}
+WELCOME_DISCOUNT=20
 DISCOUNTS={3:25,6:30,12:35}
 
 @dataclass(frozen=True)
@@ -31,5 +32,5 @@ def quote(vehicle_class:str,months:int,first_paid_booking:bool)->Quote:
         raise ValueError('Invalid vehicle or duration')
     base=MONTHLY[vehicle_class]*months
     welcome=months==1 and first_paid_booking
-    discount=20 if welcome else DISCOUNTS.get(months,0)
+    discount=WELCOME_DISCOUNT if welcome else DISCOUNTS.get(months,0)
     return Quote(base,discount,base*(100-discount)//100,welcome)
