@@ -1,6 +1,6 @@
 import {locale,t} from './locale.js';
 import {createClient} from '@supabase/supabase-js';
-export const config={api:import.meta.env.VITE_API_BASE_URL,authUrl:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,mapKey:import.meta.env.VITE_MAPTILER_KEY};
+export const config={api:import.meta.env.VITE_DEV_GATE==='true'?window.location.origin:import.meta.env.VITE_API_BASE_URL,authUrl:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,mapKey:import.meta.env.VITE_MAPTILER_KEY};
 export const configured=Boolean(config.api&&config.authUrl&&config.key&&!config.authUrl.includes('YOUR_PROJECT'));
 export const supabase=configured?createClient(config.authUrl,config.key,{auth:{flowType:'pkce'}}):null;
 export const $=id=>document.getElementById(id);
@@ -57,7 +57,7 @@ export async function api(path,{method='GET',json,auth=false}={}){
   if(!configured)throw new Error('Booking is temporarily unavailable. Please try again later.');
   const headers={};let body;
   if(json!==undefined){headers['content-type']='application/json';body=JSON.stringify(json)}
-  if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers.authorization='Bearer '+data.session.access_token}
+  if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers[import.meta.env.VITE_DEV_GATE==='true'?'X-Trippy-Authorization':'Authorization']='Bearer '+data.session.access_token}
   let res;try{res=await fetch(config.api+path,{method,headers,body,cache:'no-store'})}catch{throw new Error('We couldn’t connect right now. Please try again.')}
   let parsed=null;try{parsed=await res.json()}catch{}
   if(!res.ok){
@@ -68,5 +68,10 @@ export async function api(path,{method='GET',json,auth=false}={}){
     throw new Error(message);
   }
   return parsed;
+}
+let pricingRequest;
+export function loadPricing() {
+  pricingRequest??=api('/api/pricing').then(pricing=>{if(!state.pricing||!pricing.revision||pricing.revision>=state.pricing.revision)state.pricing=pricing;return state.pricing;}).finally(()=>{pricingRequest=null;});
+  return pricingRequest;
 }
 export function formatTime(t){if(!t)return '—';const [h,m]=String(t).split(':');const num=Number(h);return `${num%12||12}:${m} ${num>=12?'PM':'AM'}`}

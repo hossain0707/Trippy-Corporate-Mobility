@@ -1,7 +1,11 @@
+import {renderPricingEditor} from './pricing.js';
 import {$,node,state,api,formatTime,showToast} from '../../core/context.js';
 import {seatPositions} from './seatTemplates.js';
 import {openStaffVerification} from '../auth/index.js';
 import {loadDemoManagement} from '../demo/admin.js';
+import {renderDemandConsole} from './demand.js';
+import {renderRouteRevision,renderTimetableEditor} from './corridors.js';
+import {renderOpsTheam} from '../theam/index.js';
 
 let activeWorkspaceTab = 'fleet';
 function kpi(label,value){const b=node('div',{className:'ops-kpi'});b.append(node('b',{},String(value)),node('small',{},label));return b}
@@ -25,11 +29,13 @@ export async function loadOperations(){
     return;
   }
   try{
-    const [overview,requests,allServices,stops,vehicles,routes]=await Promise.all([
-      api('/api/admin/overview',{auth:true}),api('/api/admin/demand',{auth:true}),api('/api/admin/services',{auth:true}),api('/api/admin/stops',{auth:true}),api('/api/admin/vehicles',{auth:true}),api('/api/admin/routes',{auth:true})]);
-    dashboard.replaceChildren(kpi('Active vehicles',overview.activeVehicles),kpi('Open route requests',overview.openRequests),kpi('Confirmed paid bookings',overview.confirmedSubscriptions));
-    if(!requests.length)demand.append(node('div',{className:'empty-message'},'No pending route requests.'));
-    for(const r of requests.slice(0,25)){const card=node('div',{className:'pass-card'}),left=node('div');left.append(node('strong',{},r.home_zone+' → '+r.office_zone),node('p',{},`${r.preferred_class||'Any vehicle'} · ${new Date(r.created_at).toLocaleDateString()}`));card.append(left,node('span',{className:'pill'},r.status));demand.append(card)}
+    const [overview,requests,demandSummary,allServices,stops,vehicles,routes]=await Promise.all([
+      api('/api/admin/overview',{auth:true}),api('/api/admin/demand',{auth:true}),
+      api('/api/admin/demand/summary',{auth:true}),api('/api/admin/services',{auth:true}),
+      api('/api/admin/stops',{auth:true}),api('/api/admin/vehicles',{auth:true}),
+      api('/api/admin/routes',{auth:true})]);
+    await renderOpsTheam({overview,requests,demandSummary,allServices,stops,vehicles,routes},api);
+    renderDemandConsole(demand,requests,demandSummary,loadOperations);
     if(!allServices.length)services.append(node('div',{className:'empty-message'},'No scheduled services yet.'));
     for(const s of allServices){const card=node('div',{className:'pass-card'}),left=node('div');left.append(node('strong',{},s.code),node('p',{},`${formatTime(s.morning_departure)} / ${formatTime(s.evening_departure)} · ${s.active?'ACTIVE':'INACTIVE'}`));
       const toggle=node('button',{className:'outline',type:'button'},s.active?'Pause service':'Activate service');
@@ -56,6 +62,7 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
     ['fleet', 'Vehicles & seats', 'Register vehicles, review seat layouts and approve documents'],
     ['routes', 'Stops & routes', 'Set pickup stops and morning/evening routes'],
     ['schedule', 'Timetables', 'Assign vehicles and departure times to approved routes'],
+    ['pricing', 'Pricing', 'Set monthly fares and subscription discounts'],
     ['staff', 'Drivers & roles', 'Manage driver access, licences and assignments'],
   ];
   const tabs = node('div', {className: 'ops-workspace-tabs', role: 'tablist', 'aria-label': 'Fleet management sections'});
@@ -116,6 +123,9 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
     row.append(left, node('span', {className: 'ops-status'+(vehicle.active ? ' ops-status-active' : '')},status));
     registry.append(row);
   }
+  renderPricingEditor(groups.pricing).catch(error=>{
+    groups.pricing.replaceChildren(node('p',{className:'error-note'},error.message));
+  });
   panels.fleet.insertBefore(registry, groups.fleet);
   const routesRegistry = node('div', {className: 'ops-registry'});
   routesRegistry.append(node('h4', {}, 'Routes · '+routes.length));
@@ -152,11 +162,13 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
   const rSubmit=node('button',{className:'primary',type:'submit'},'Create morning + reverse evening route');rForm.append(node('h4',{},'Create approved route corridor'),rName.wrap,home.wrap,office.wrap,addStop.wrap,add,list,node('p',{className:'ops-help'},'Pick a minimum of 2 approved stops in actual morning travel order. Evening drop-off sequence is generated in reverse.'),rSubmit);
   rForm.onsubmit=async e=>{e.preventDefault();if(order.length<2)return showToast('Select at least two approved boarding stops');rSubmit.disabled=true;
     try{await api('/api/admin/routes',{method:'POST',auth:true,json:{name:rName.input.value,homeZone:home.input.value,officeZone:office.input.value,morningStops:order,eveningStops:[...order].reverse()}});showToast('Approved corridor created');loadOperations()}catch(e){showToast(e.message);rSubmit.disabled=false}};groups.routes.append(rForm);
+  renderRouteRevision(groups.routes,{routes,stops},loadOperations);
   // 5. Scheduled service - inactive until driver assigned.
   const sForm=node('form'),code=field('Service code','code','text','TH-101'),route=selectField('Approved corridor','routeId',routes.filter(r=>r.active).map(r=>[r.id,r.name])),fleet=selectField('Verified fleet vehicle','vehicleId',vehicles.filter(v=>v.active&&v.documents_verified&&v.seat_map_verified).map(v=>[v.id,v.registration_no+' · '+v.class])),morning=field('Morning start (24h)','morningDeparture','time'),evening=field('Evening return (24h)','eveningDeparture','time');
   morning.input.value='07:30';evening.input.value='18:00';const days=field('ISO operation days (comma separated)','days','text','1,2,3,4,7');days.input.value='1,2,3,4,7';const sSubmit=node('button',{className:'primary',type:'submit'},'Create inactive service');
   sForm.append(node('h4',{},'Schedule a verified vehicle'),code.wrap,route.wrap,fleet.wrap,morning.wrap,evening.wrap,days.wrap,node('p',{className:'ops-help'},'Bangladesh operating days are adjustable by company and public holiday policy; 1=Mon, 7=Sun.'),sSubmit);
   sForm.onsubmit=async e=>{e.preventDefault();sSubmit.disabled=true;try{await api('/api/admin/services',{method:'POST',auth:true,json:{code:code.input.value,routeId:route.input.value,vehicleId:fleet.input.value,morningDeparture:morning.input.value,eveningDeparture:evening.input.value,operatingDays:days.input.value.split(',').map(s=>Number(s.trim()))}});showToast('Inactive service created. Assign a driver before activation.');loadOperations()}catch(e){showToast(e.message);sSubmit.disabled=false}};groups.schedule.append(sForm);
+  renderTimetableEditor(groups.schedule,{allServices},loadOperations);
   const aForm=node('form'),service=selectField('Service requiring driver','serviceId',allServices.map(s=>[s.id,s.code])),driver=field('Verified driver UUID','driverId'),assign=node('button',{className:'primary',type:'submit'},'Assign verified driver');
   aForm.append(node('h4',{},'Assign approved driver to service'),service.wrap,driver.wrap,node('p',{className:'ops-help'},'Driver must have signed in and been granted a driver role by an administrator.'),assign);
   aForm.onsubmit=async e=>{e.preventDefault();assign.disabled=true;try{await api('/api/admin/driver-assignments',{method:'POST',auth:true,json:{serviceId:service.input.value,driverId:driver.input.value}});showToast('Driver assignment saved. Service can now be activated.');loadOperations()}catch(e){showToast(e.message);assign.disabled=false}};groups.staff.append(aForm);

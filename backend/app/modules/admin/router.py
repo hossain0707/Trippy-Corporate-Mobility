@@ -1,16 +1,67 @@
 """Staff-only audited fleet, corridors, schedules, identity assignments and capacity requests."""
+import json
+from pydantic import Field
 from uuid import UUID
 from fastapi import APIRouter,Depends
 from ...core.database import connection,one,rows,execute
-from ...core.schemas import NewStop,NewVehicle,VerifyVehicle,NewRoute,NewService,Activation,DriverAssignment,RoleChange,DriverCompliance,SeatLayout
+from ...core.schemas import NewStop,NewVehicle,VerifyVehicle,NewRoute,NewService,Activation,DriverAssignment,RoleChange,DriverCompliance,SeatLayout,Strict
 from ...core.errors import fail
 from ...core.clock import today
 from ..auth.router import require
+from ..booking.pricing import read_pricing
 
 router=APIRouter(prefix='/api/admin',tags=['Operations'])
 
 def audit(conn,actor,action,target,detail='{}'):
     execute(conn,'INSERT INTO app.audit_events(actor_id,action,target_id,detail) VALUES(%s,%s,%s,%s::jsonb)',(actor,action,target,detail))
+
+class MonthlyFares(Strict):
+    bus: int = Field(strict=True, ge=1, le=1000000)
+    hiace: int = Field(strict=True, ge=1, le=1000000)
+    car: int = Field(strict=True, ge=1, le=1000000)
+
+
+class PlanDiscounts(Strict):
+    firstMonth: int = Field(strict=True, ge=0, le=99)
+    threeMonths: int = Field(strict=True, ge=0, le=99)
+    sixMonths: int = Field(strict=True, ge=0, le=99)
+    twelveMonths: int = Field(strict=True, ge=0, le=99)
+
+
+class PricingUpdate(Strict):
+    monthly: MonthlyFares
+    discounts: PlanDiscounts
+    revision: int = Field(strict=True, ge=1)
+
+
+@router.get('/pricing')
+def get_subscription_pricing(user=Depends(require('admin'))):
+    with connection() as conn:
+        return read_pricing(conn)
+
+
+@router.put('/pricing')
+def update_subscription_pricing(data: PricingUpdate, user=Depends(require('admin'))):
+    monthly, discounts = data.monthly, data.discounts
+    if min(monthly.model_dump().values()) * (100 - max(discounts.model_dump().values())) < 100:
+        fail(422, 'Every discounted monthly fare must be at least ৳1')
+    with connection() as conn:
+        previous = read_pricing(conn, lock=True)
+        if previous['revision'] != data.revision:
+            fail(409, 'Pricing changed since you opened it. Reload the latest prices before editing.')
+        if previous['monthly'] == monthly.model_dump() and previous['discounts'] == discounts.model_dump():
+            return previous
+        execute(conn, """UPDATE app.subscription_pricing
+            SET bus=%s, hiace=%s, car=%s, first_month=%s, three_months=%s,
+                six_months=%s, twelve_months=%s, revision=revision+1
+            WHERE singleton""",
+            (monthly.bus, monthly.hiace, monthly.car, discounts.firstMonth,
+             discounts.threeMonths, discounts.sixMonths, discounts.twelveMonths))
+        current = read_pricing(conn)
+        audit(conn, user['id'], 'pricing.updated', None,
+              json.dumps({'previous': previous, 'current': current}))
+        return current
+
 
 @router.get('/overview')
 def overview(user=Depends(require('admin','dispatcher'))):
@@ -155,6 +206,13 @@ def activate(service_id:UUID,d:Activation,user=Depends(require('admin','dispatch
                 count=one(conn,'''SELECT COUNT(*)::int AS n FROM app.route_stops rs JOIN app.stops t ON t.id=rs.stop_id
                     WHERE rs.route_id=%s AND rs.direction=%s AND t.approved AND t.active''',(service['route_id'],direction))['n']
                 if count<2: fail(422,'Route needs at least two approved stops in each direction')
+                timed=one(conn,'''SELECT COUNT(*)::int AS n
+                    FROM app.service_stop_times tm
+                    JOIN app.route_stops rs ON rs.route_id=service['route_id']
+                      AND rs.direction=tm.direction AND rs.stop_id=tm.stop_id
+                    WHERE tm.service_id=%s AND tm.direction=%s''',(service_id,direction))['n']
+                if timed!=count:
+                    fail(422,'Complete and verify all '+direction+' timetable stops before activation')
             if not one(conn,"""SELECT 1 FROM app.driver_assignments a JOIN app.driver_compliance c ON c.driver_id=a.driver_id
                    WHERE a.service_id=%s AND a.active AND c.license_expires_on>=((now() AT TIME ZONE 'Asia/Dhaka')::date) LIMIT 1""",(service_id,)):
                 fail(422,'Assign a verified driver before activating')

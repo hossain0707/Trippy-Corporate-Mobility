@@ -12,7 +12,7 @@ from ...core.errors import fail
 from ...core.limits import throttle
 from ...core.schemas import Duration
 from ..auth.router import actor, require
-from ..booking.pricing import end_date, quote, MONTHLY
+from ..booking.pricing import end_date, quote, read_pricing
 
 router = APIRouter(prefix="/api", tags=["Demo bookings — no real transport"])
 
@@ -40,12 +40,12 @@ class DemoBooking(Strict):
     paymentMethod: Literal["bkash_demo","nagad_demo","card_demo","bank_demo"]
 
 
-def demo_quote(vehicle_class:str, months:int):
+def demo_quote(vehicle_class:str, months:int, tariff=None):
     # Illustration of the current catalog tariff. The first-month discount is a
     # SAMPLE offer, not a claim that a customer qualifies for the real promotion.
-    pricing = quote(vehicle_class,months,True)
+    pricing = quote(vehicle_class,months,True,tariff)
     return {
-        "monthlyRateBdt": MONTHLY[vehicle_class],
+        "monthlyRateBdt": pricing.base // months,
         "baseAmountBdt": pricing.base,
         "discountPercent": pricing.discount,
         "discountAmountBdt": pricing.base - pricing.amount,
@@ -127,7 +127,7 @@ def public_demo_seats(service_id: UUID, startDate: date, months: int = Query(1, 
         return {"isDemo": True, "service": service, "startsOn": startDate,
                 "endsBefore": ends, "seats": seats,
                 "availableCount": sum(not seat["occupied"] for seat in seats),
-                "farePreview": demo_quote(service["vehicle_class"], months)}
+                "farePreview": demo_quote(service["vehicle_class"], months, read_pricing(conn))}
 
 
 def create_demo_booking(conn, user_id: UUID, service_id: UUID, data: DemoBooking):
@@ -152,7 +152,7 @@ def create_demo_booking(conn, user_id: UUID, service_id: UUID, data: DemoBooking
         WHERE id=%s AND vehicle_id=%s AND enabled""", (data.seatId, service["vehicle_id"]))
     if not seat:
         fail(422, "Seat is not part of this demo vehicle")
-    price = demo_quote(service["vehicle_class"],data.months)
+    price = demo_quote(service["vehicle_class"],data.months,read_pricing(conn))
     booking = one(conn, """INSERT INTO app.demo_bookings
       (service_id,user_id,seat_id,pickup_zone,office_zone,starts_on,ends_before,months,
        idempotency_key,estimated_base_amount_bdt,discount_percent,estimated_total_bdt,

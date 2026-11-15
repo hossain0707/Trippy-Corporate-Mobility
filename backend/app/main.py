@@ -13,6 +13,7 @@ from .modules.booking.router import router as booking
 from .modules.payments.router import router as payments
 from .modules.tracking.router import router as tracking
 from .modules.admin.router import router as admin
+from .modules.admin.corridors import router as corridor_operations
 from .modules.support.router import router as support
 from .modules.demo.router import router as demo
 
@@ -45,7 +46,7 @@ async def invalid_reference(_,exc):
 async def http_error(_,exc:HTTPException):
     return JSONResponse({'error':'HTTP_ERROR','message':exc.detail},status_code=exc.status_code)
 
-for router in (identity,catalog,booking,payments,tracking,admin,support,demo):
+for router in (identity,catalog,booking,payments,tracking,admin,corridor_operations,support,demo):
     app.include_router(router)
 
 @app.get('/health/live',tags=['Health'])
