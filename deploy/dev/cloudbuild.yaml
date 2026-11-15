@@ -1,0 +1,52 @@
+# Deployment-only workflow for the existing IAP-protected TRIPPY DEV Cloud Run.
+# Explicitly targets DEV project/service; no traffic switched and no PRD project.
+# Run only from trusted feature/theam revision after reviewing the service/IAP policy.
+substitutions:
+  _DEV_PUBLISHABLE_KEY: 'REQUIRED_AT_INVOCATION'
+  _DEV_API_ORIGIN: 'https://trippy-api-dev-857629427086.asia-south1.run.app'
+  _DEV_SUPABASE_URL: 'https://jhfoxjqerwqpryjpoixy.supabase.co'
+steps:
+  - id: assert-dev-project
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:stable'
+    entrypoint: bash
+    args:
+      - '-euc'
+      - |
+        test "$PROJECT_ID" = "trippy-corporate-mobility" || { echo "BLOCKED: wrong GCP project"; exit 1; }
+        test "$_DEV_PUBLISHABLE_KEY" != "REQUIRED_AT_INVOCATION" || { echo "BLOCKED: DEV publishable key missing"; exit 1; }
+        gcloud run services describe trippy-api-dev --project "$PROJECT_ID" --region asia-south1 --format="value(metadata.name)" | grep -qx trippy-api-dev
+        echo "Existing DEV service found. Deployment will not modify PRD or assign traffic."
+  - id: build-dev-image
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: bash
+    args:
+      - '-euc'
+      - |
+        docker build -f Dockerfile.dev \
+          --build-arg "VITE_API_BASE_URL=$_DEV_API_ORIGIN" \
+          --build-arg "VITE_SUPABASE_URL=$_DEV_SUPABASE_URL" \
+          --build-arg "VITE_SUPABASE_PUBLISHABLE_KEY=$_DEV_PUBLISHABLE_KEY" \
+          -t "asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/trippy-api-dev:$BUILD_ID" .
+  - id: push-dev-image
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: bash
+    args:
+      - '-euc'
+      - |
+        docker push "asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/trippy-api-dev:$BUILD_ID"
+  - id: deploy-tagged-dev-revision
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:stable'
+    entrypoint: bash
+    args:
+      - '-euc'
+      - |
+        gcloud run deploy trippy-api-dev \
+          --project="$PROJECT_ID" --region=asia-south1 \
+          --image="asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/trippy-api-dev:$BUILD_ID" \
+          --tag=theam --no-traffic --quiet
+        gcloud run services describe trippy-api-dev \
+          --project="$PROJECT_ID" --region=asia-south1 \
+          --format="yaml(status.latestCreatedRevisionName,status.traffic)"
+        echo "DEV theam revision created with 0% traffic. IAP and current default DEV traffic preserved."
+options:
+  logging: CLOUD_LOGGING_ONLY
