@@ -15,7 +15,9 @@ steps:
         test "$PROJECT_ID" = "trippy-corporate-mobility" || { echo "BLOCKED: wrong GCP project"; exit 1; }
         test "$_DEV_PUBLISHABLE_KEY" != "REQUIRED_AT_INVOCATION" || { echo "BLOCKED: DEV publishable key missing"; exit 1; }
         gcloud run services describe trippy-api-dev --project "$PROJECT_ID" --region asia-south1 --format="value(metadata.name)" | grep -qx trippy-api-dev
-        echo "Existing DEV service found. Deployment will not modify PRD or assign traffic."
+        # Fail closed if Cloud Run's own IAP gate is not confirmed, before replacing the image.
+        gcloud run services describe trippy-api-dev --project "$PROJECT_ID" --region asia-south1 | grep -qi "Iap Enabled: true" || { echo "BLOCKED: Cloud Run IAP is not verified"; exit 1; }
+        echo "Existing IAP-protected DEV service found. No PRD changes or traffic assignment."
   - id: build-dev-image
     name: 'gcr.io/cloud-builders/docker'
     entrypoint: bash
