@@ -9,6 +9,7 @@ export function showDevAccount(user){
   if(!enabled||!gate)return;
   const app=document.getElementById('app');
   if(!app)return;
+  document.documentElement.classList.toggle('theam-dev-auth',!user);
   app.hidden=!user;
   app.style.display=user?'':'none';
   gate.hidden=Boolean(user);
