@@ -27,6 +27,7 @@ export async function loadRoutes(){
   const demo=demoResult.status==='fulfilled'
     ?demoResult.value.filter(s=>!q.vehicleClass||s.vehicle_class===q.vehicleClass):[];
   state.services=real;
+  document.dispatchEvent(new CustomEvent('trippy:routes-loaded',{detail:{services:real}}));
   container.replaceChildren();
   const realLabel=real.length ? real.length+' available ride'+(real.length===1?'':'s') : '';
   const demoLabel=demo.length ? demo.length+' demo ride'+(demo.length===1?'':'s') : '';

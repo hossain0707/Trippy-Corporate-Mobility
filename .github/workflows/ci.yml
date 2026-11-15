@@ -52,3 +52,11 @@ jobs:
       - name: Frontend checks and seat map tests
         working-directory: frontend
         run: npm run check && npm test && npm run build
+      - name: Gated DEV build smoke check (placeholder publishable values)
+        working-directory: frontend
+        env:
+          VITE_DEV_GATE: 'true'
+          VITE_API_BASE_URL: https://trippy-api-dev-857629427086.asia-south1.run.app
+          VITE_SUPABASE_URL: https://jhfoxjqerwqpryjpoixy.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder_not_a_real_key
+        run: npm run build

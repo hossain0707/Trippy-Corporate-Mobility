@@ -4,6 +4,7 @@ import {openStaffVerification} from '../auth/index.js';
 import {loadDemoManagement} from '../demo/admin.js';
 import {renderDemandConsole} from './demand.js';
 import {renderRouteRevision,renderTimetableEditor} from './corridors.js';
+import {renderOpsTheam} from '../theam/index.js';
 
 let activeWorkspaceTab = 'fleet';
 function kpi(label,value){const b=node('div',{className:'ops-kpi'});b.append(node('b',{},String(value)),node('small',{},label));return b}
@@ -32,7 +33,7 @@ export async function loadOperations(){
       api('/api/admin/demand/summary',{auth:true}),api('/api/admin/services',{auth:true}),
       api('/api/admin/stops',{auth:true}),api('/api/admin/vehicles',{auth:true}),
       api('/api/admin/routes',{auth:true})]);
-    dashboard.replaceChildren(kpi('Active vehicles',overview.activeVehicles),kpi('Open route requests',overview.openRequests),kpi('Confirmed paid bookings',overview.confirmedSubscriptions));
+    await renderOpsTheam({overview,requests,demandSummary,allServices,stops,vehicles,routes},api);
     renderDemandConsole(demand,requests,demandSummary,loadOperations);
     if(!allServices.length)services.append(node('div',{className:'empty-message'},'No scheduled services yet.'));
     for(const s of allServices){const card=node('div',{className:'pass-card'}),left=node('div');left.append(node('strong',{},s.code),node('p',{},`${formatTime(s.morning_departure)} / ${formatTime(s.evening_departure)} · ${s.active?'ACTIVE':'INACTIVE'}`));

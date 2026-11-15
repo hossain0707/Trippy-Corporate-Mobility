@@ -1,6 +1,6 @@
 import {locale,t} from './locale.js';
 import {createClient} from '@supabase/supabase-js';
-export const config={api:import.meta.env.VITE_API_BASE_URL,authUrl:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,mapKey:import.meta.env.VITE_MAPTILER_KEY};
+export const config={api:import.meta.env.VITE_DEV_GATE==='true'?window.location.origin:import.meta.env.VITE_API_BASE_URL,authUrl:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,mapKey:import.meta.env.VITE_MAPTILER_KEY};
 export const configured=Boolean(config.api&&config.authUrl&&config.key&&!config.authUrl.includes('YOUR_PROJECT'));
 export const supabase=configured?createClient(config.authUrl,config.key,{auth:{flowType:'pkce'}}):null;
 export const $=id=>document.getElementById(id);
