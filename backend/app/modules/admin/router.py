@@ -155,6 +155,13 @@ def activate(service_id:UUID,d:Activation,user=Depends(require('admin','dispatch
                 count=one(conn,'''SELECT COUNT(*)::int AS n FROM app.route_stops rs JOIN app.stops t ON t.id=rs.stop_id
                     WHERE rs.route_id=%s AND rs.direction=%s AND t.approved AND t.active''',(service['route_id'],direction))['n']
                 if count<2: fail(422,'Route needs at least two approved stops in each direction')
+                timed=one(conn,'''SELECT COUNT(*)::int AS n
+                    FROM app.service_stop_times tm
+                    JOIN app.route_stops rs ON rs.route_id=service['route_id']
+                      AND rs.direction=tm.direction AND rs.stop_id=tm.stop_id
+                    WHERE tm.service_id=%s AND tm.direction=%s''',(service_id,direction))['n']
+                if timed!=count:
+                    fail(422,'Complete and verify all '+direction+' timetable stops before activation')
             if not one(conn,"""SELECT 1 FROM app.driver_assignments a JOIN app.driver_compliance c ON c.driver_id=a.driver_id
                    WHERE a.service_id=%s AND a.active AND c.license_expires_on>=((now() AT TIME ZONE 'Asia/Dhaka')::date) LIMIT 1""",(service_id,)):
                 fail(422,'Assign a verified driver before activating')

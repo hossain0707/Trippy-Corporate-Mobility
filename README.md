@@ -22,7 +22,7 @@ Trippy Corporate offers fixed-route recurring seat subscriptions for Dhaka offic
 | [API contracts](docs/API_CONTRACTS.md) and [route matrix](docs/API.md) | Backend and frontend |
 | [Team handoff](docs/TEAM_HANDOFF.md) and [contributing](CONTRIBUTING.md) | All contributors |
 | [Hosted rollout](docs/HOSTED_ROLLOUT.md), [deployment](docs/DEPLOYMENT.md) and [infrastructure](infra/README.md) | DevOps/SRE |
-| [Operations runbook](docs/OPERATIONS.md) | Dispatch and support |
+| [Operations runbook](docs/OPERATIONS.md) and [secure first-admin setup](docs/ADMIN_SETUP.md) | Owner, dispatch and support |
 | [Risk register](docs/RISK_REGISTER.md) and [release gates](docs/PRODUCTION_READINESS.md) | Security, QA, leadership |
 | [Security policy](SECURITY.md) and [proprietary license](LICENSE) | Team members and legal |
 
@@ -103,14 +103,19 @@ ALLOW_FAKE_RIDES=YES_I_UNDERSTAND docker compose run --rm \
 
 This creates three clearly labelled fake services (`DEMO-BUS-001`, `DEMO-HIACE-001`, `DEMO-CAR-001`), fake licenses, placeholder GPS coordinates, and fake verification. It is **never allowed** in staging or production. Delete the development database volume when finished with these fixtures. The `preview/index.html` browser-only demo needs no keys, Docker, or API, but cannot make real reservations.
 
-To bootstrap the *first* administrator, that person must first sign in through the verified phone OTP flow. From an owner-controlled private terminal:
+To activate the *first* administrator, the intended owner must first sign in through a **verified Supabase Auth account**, then verify its identity in Supabase Authentication → Users. Run the owner-only bootstrap with the exact **Supabase Auth UUID** and confirmed email (no default password):
 
 ```bash
-docker compose exec -e BOOTSTRAP_ADMIN=I_AUTHORIZE_BOOTSTRAP api \
-  python -m scripts.bootstrap_admin --phone +8801XXXXXXXXX
+cd backend
+BOOTSTRAP_ADMIN=I_AUTHORIZE_BOOTSTRAP python -m scripts.bootstrap_admin \
+  --auth-user-id "VERIFIED_SUPABASE_AUTH_UUID" \
+  --email "verified-owner@example.com" \
+  --confirm PROMOTE-FIRST-ADMIN
 ```
 
-The action refuses to create a second administrator. Subsequent driver/dispatcher assignments use admin-only endpoints and audit records. A driver also needs an approved, non-expired driving-license record before assignment.
+This is a private, one-time, audited operation; it requires the PostgreSQL connection to the same Supabase project (with access to private `auth.users`). The script refuses unverified identities, wrong emails, missing app profiles, and duplicate owners. **Never** expose admin bootstrap via HTTP, an OAuth redirect or public signup. Staff use standard Google / Supabase sign-in plus authenticator-app MFA, not a shared admin password.
+
+See [secure first-admin setup and fleet operations](docs/ADMIN_SETUP.md) for the operator checklist, two-factor enrollment and the new guided Vehicles / Routes / Timetables / Drivers workspace.
 
 ## Operating workflow
 

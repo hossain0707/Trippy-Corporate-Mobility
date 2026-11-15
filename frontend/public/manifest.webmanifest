@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "TRIPPY Corporate Mobility",
+  "short_name": "TRIPPY",
+  "description": "Dhaka fixed-route corporate commute bookings",
+  "start_url": "/?view=phone",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7fbf8",
+  "theme_color": "#014f41",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/theam/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

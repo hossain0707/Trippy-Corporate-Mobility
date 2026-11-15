@@ -4,7 +4,7 @@ import {openLogin} from '../auth/index.js';
 
 $('supportBtn').onclick=()=>{
   if(!state.user)return openLogin(()=>$('supportBtn').click());
-  showModal('Report a safety or service concern','PASSENGER SUPPORT');
+  showModal('Report an issue','PASSENGER SUPPORT');
   const body=$('modalContent');
   body.append(node('p',{className:'notice'},'Not an emergency hotline. If you are in immediate danger, contact local emergency services directly.'));
   const form=node('form',{className:'form-stack'});
@@ -12,10 +12,10 @@ $('supportBtn').onclick=()=>{
   for(const [value,label] of [['safety','Passenger safety'],['driver','Driver conduct'],['payment','Billing'],['route','Route problem'],['accessibility','Accessibility'],['other','Other']]){
     category.append(node('option',{value},label));
   }
-  const details=node('textarea',{name:'message',rows:'5',required:'','aria-label':'Describe concern',placeholder:'Tell us what happened, when and which route it involved (10-2000 characters).'});
+  const details=node('textarea',{name:'message',rows:'5',required:'','aria-label':'Describe concern',placeholder:'Describe what happened, when, and the route involved.'});
   details.maxLength=2000;details.minLength=10;
-  const send=node('button',{className:'primary',type:'submit'},'Submit report to operations');
-  form.append(node('label',{},'REPORT CATEGORY'),category,node('label',{},'DETAILS'),details,send);
+  const send=node('button',{className:'primary',type:'submit'},'Send report');
+  form.append(node('label',{},'Issue type'),category,node('label',{},'What happened?'),details,send);
   form.onsubmit=async e=>{e.preventDefault();send.disabled=true;
     try{const ticket=await api('/api/support/tickets',{method:'POST',auth:true,json:{category:category.value,message:details.value}});
       showToast('Report received: '+String(ticket.id).slice(0,8));closeModal();

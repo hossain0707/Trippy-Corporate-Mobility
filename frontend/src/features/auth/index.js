@@ -239,9 +239,11 @@ export function openPasswordUpdate() {
   $('modalContent').append(form);
 }
 
-function openStaffVerification() {
-  showModal('Two-step verification', 'Trippy Corporate');
-  const form = node('form', {className: 'form-stack'});
+export function openStaffVerification(onSuccess) {
+  showModal('Two-step verification', 'TRIPPY account security', {variant: 'auth'});
+  const form = node('form', {className: 'form-stack auth-form'});
+  form.append(node('p', {className: 'auth-intro'},
+    'Staff access requires a 6-digit code from your authenticator app. Enrollment or verification must be completed before fleet operations are available.'));
   const start = button('Set up or verify authenticator');
   const setup = async () => {
     const {data, error} = await supabase.auth.mfa.listFactors();
@@ -262,7 +264,7 @@ function openStaffVerification() {
     submit(form, 'Two-step verification', async () => {
       const {error: verifyError} = await supabase.auth.mfa.challengeAndVerify({factorId, code: code.value});
       if (verifyError) throw verifyError;
-      await finishLogin();
+      await finishLogin(onSuccess);
     });
   };
   start.onclick = async () => {
@@ -282,6 +284,21 @@ function openStaffVerification() {
 $('accountBtn').onclick = () => {
   if (!state.user) return openLogin();
   showModal('My account', 'Trippy Corporate');
+  const identity = node('section', {className: 'account-security-note'});
+  identity.append(node('p', {}, 'Account type: ' + (state.user.role || 'rider')));
+  const uid = state.session?.user?.id;
+  if (uid) {
+    const row = node('div', {className: 'account-identity-row'});
+    row.append(node('span', {}, 'Supabase User ID: ' + uid));
+    const copy = button('Copy ID', 'button', 'outline');
+    copy.onclick = async () => {
+      try { await navigator.clipboard.writeText(uid); showToast('Account ID copied'); }
+      catch { showToast('Use Supabase Authentication > Users to copy your user ID'); }
+    };
+    row.append(copy);
+    identity.append(row);
+  }
+  $('modalContent').append(identity);
   const form = node('form', {className: 'form-stack'});
   const fullName = field(form, 'Full name', {autocomplete: 'name', maxlength: '120'}, state.user.full_name || '');
   const email = field(form, 'Billing email', {type: 'email', autocomplete: 'email'}, state.user.email || '');
@@ -297,7 +314,7 @@ $('accountBtn').onclick = () => {
     form.append(verify);
   }
   if (['admin', 'dispatcher', 'driver'].includes(state.user.role) && !state.user.mfa_verified) {
-    const verifyStaff = button('Two-step verification');
+    const verifyStaff = button('Set up two-step verification');
     verifyStaff.onclick = openStaffVerification;
     form.append(verifyStaff);
   }

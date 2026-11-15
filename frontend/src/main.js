@@ -1,5 +1,5 @@
-import {showDevAccount} from './core/dev-gate.js';
 import './style.css';
+import './theam.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {$,node,state,api,dhakaDay,showToast,supabase,configured} from './core/context.js';
 import {loadRoutes} from './features/search/index.js';
@@ -9,18 +9,27 @@ import {stopDriverGPS,loadDriver} from './features/driver/index.js';
 import {loadOperations} from './features/admin/index.js';
 import {openPasswordUpdate,setAccount} from './features/auth/index.js';
 import {initializeLanguage} from './core/locale.js';
+import {initializeDhakaLocations} from './features/locations/index.js';
 import './features/demand/index.js';
 import './features/support/index.js';
+import {initTheam} from './features/theam/index.js';
+import {initializeDevGate,showDevAccount} from './core/dev-gate.js';
 function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGPS();state.page=page;document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
-  ['search','passes','tracking','driver','ops'].forEach(p=>$('page'+p[0].toUpperCase()+p.slice(1)).classList.toggle('hidden',p!==page));$('hero').classList.toggle('hidden',page!=='search');
+  ['search','passes','tracking','driver','ops'].forEach(p=>$('page'+p[0].toUpperCase()+p.slice(1)).classList.toggle('hidden',p!==page));
+  $('theamPublicShell').classList.toggle('hidden',page!=='search');
+  document.body.classList.toggle('theam-operations',page==='ops');
+  $('hero').classList.toggle('hidden',page!=='search');
   if(state.trackingTimer){clearInterval(state.trackingTimer);state.trackingTimer=null}if(page!=='tracking'&&state.map){state.map.remove();state.map=null;state.mapMarker=null}
   if(page==='passes')loadPasses();if(page==='tracking')loadTracking();if(page==='driver')loadDriver();if(page==='ops')loadOperations();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+const isDevGate=initializeDevGate();
+initTheam(setPage);
 async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomorrow;$('startDate').min=dhakaDay();$('startDate').max=dhakaDay(60);
   if(new URLSearchParams(location.search).get('payment'))showToast('Payment processing. Check My passes after provider verification. A browser redirect alone never confirms a seat.');
   if (!configured) {
+    if(!isDevGate)await loadRoutes();
     return;
   }
   let generation = 0;
@@ -43,7 +52,7 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
           const user = await api('/api/me', {auth: true});
           if (request === generation) {
             setAccount(user);
-            await loadRoutes();
+            if(isDevGate)await loadRoutes();
           }
         } catch {
           if (request === generation) showToast('Account services are temporarily unavailable.');
@@ -51,17 +60,20 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
       }, 0);
     }
   });
+  if(!isDevGate)await loadRoutes();
 }
 
 export function applyRoleNavigation(){
-  showDevAccount(state.user);
+  if(isDevGate)showDevAccount(state.user);
   const role=state.user?.role;
   $('driverNav').classList.toggle('hidden',role!=='driver');
   $('opsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
+  $('mobileOpsNav').classList.toggle('hidden',role!=='admin'&&role!=='dispatcher');
   if(!role||!['driver','admin','dispatcher'].includes(role)){
     if(['driver','ops'].includes(state.page))setPage('search');
   }
 }
 
 initializeLanguage();
+initializeDhakaLocations();
 initialize();

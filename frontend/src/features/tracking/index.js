@@ -1,12 +1,12 @@
 import {$,node,state,api,config} from '../../core/context.js';
-export async function loadTracking(){const list=$('trackList');list.replaceChildren();$('trackResult').classList.add('hidden');if(!state.user){list.append(node('div',{className:'empty-message'},'Sign in with an active, confirmed pass to track your assigned ride.'));return}
-  try{const passes=await api('/api/me/reservations',{auth:true});const valid=passes.filter(b=>b.status==='confirmed');if(!valid.length){list.append(node('div',{className:'empty-message'},'No confirmed paid seat passes are available for tracking.'));return}
-    for(const b of valid){const card=node('article',{className:'pass-card'}),left=node('div');left.append(node('strong',{},`${b.code} · ${b.seat_label}`),node('p',{},'GPS only shown to authorized passengers.'));const btn=node('button',{className:'primary',type:'button'},'Track vehicle');
+export async function loadTracking(){const list=$('trackList');list.replaceChildren();$('trackResult').classList.add('hidden');if(!state.user){list.append(node('div',{className:'empty-message'},'Sign in to track your confirmed ride.'));return}
+  try{const passes=await api('/api/me/reservations',{auth:true});const valid=passes.filter(b=>b.status==='confirmed');if(!valid.length){list.append(node('div',{className:'empty-message'},'You don’t have a confirmed, paid ride to track yet.'));return}
+    for(const b of valid){const card=node('article',{className:'pass-card'}),left=node('div');left.append(node('strong',{},`${b.code} · ${b.seat_label}`),node('p',{},'Tracking is available for your confirmed ride.'));const btn=node('button',{className:'primary',type:'button'},'Track vehicle');
       btn.onclick=()=>{loadVehicleLocation(b.service_id,b.code);if(state.trackingTimer)clearInterval(state.trackingTimer);state.trackingTimer=setInterval(()=>{if(state.page==='tracking')loadVehicleLocation(b.service_id,b.code)},15000)};
       card.append(left,btn);list.append(card)}
   }catch(e){list.append(node('div',{className:'empty-message'},e.message))}
 }
-async function loadVehicleLocation(serviceId,code){const box=$('trackResult');box.classList.remove('hidden');if(!state.map||box.dataset.serviceId!==serviceId)box.replaceChildren(node('p',{},'Checking authorized driver GPS signal…'));
+async function loadVehicleLocation(serviceId,code){const box=$('trackResult');box.classList.remove('hidden');if(!state.map||box.dataset.serviceId!==serviceId)box.replaceChildren(node('p',{},'Checking vehicle location…'));
   try{const data=await api(`/api/tracking/${serviceId}`,{auth:true});
     const headline=`${code} · ${data.state==='live'?'Live location':data.state==='stale'?'GPS signal is stale':'No live GPS signal'}`;
     if(state.map&&box.dataset.serviceId===serviceId&&data.location){
@@ -31,6 +31,6 @@ async function loadVehicleLocation(serviceId,code){const box=$('trackResult');bo
         }catch{box.append(node('p',{className:'notice'},'Street map temporarily unavailable. GPS freshness and coordinates are still shown.'))}
       }else box.append(node('p',{className:'notice'},'Street map needs a MapTiler key; authorized GPS coordinates and freshness are shown above.'));
       box.append(node('p',{className:'notice'},'Location is restricted to eligible passengers during scheduled commute windows. Arrival estimates and actual road-route overlays require a routing provider.'));
-    }else box.append(node('p',{},'The assigned driver device has not yet published a location.'));
+    }else box.append(node('p',{},'The driver hasn’t shared a location yet.'));
   }catch(e){box.replaceChildren(node('p',{className:'error-note'},e.message))}
 }

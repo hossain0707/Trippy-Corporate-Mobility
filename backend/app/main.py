@@ -13,7 +13,9 @@ from .modules.booking.router import router as booking
 from .modules.payments.router import router as payments
 from .modules.tracking.router import router as tracking
 from .modules.admin.router import router as admin
+from .modules.admin.corridors import router as corridor_operations
 from .modules.support.router import router as support
+from .modules.demo.router import router as demo
 
 log=logging.getLogger('trippy')
 
@@ -29,7 +31,7 @@ app=FastAPI(title='Trippy Corporate API',version='1.0.0',lifespan=lifespan,
             docs_url='/api/docs' if settings().app_env!='production' else None,
             redoc_url=None,openapi_url='/api/openapi.json' if settings().app_env!='production' else None)
 app.add_middleware(CORSMiddleware,allow_origins=[settings().web_origin],allow_credentials=False,
-                   allow_methods=['GET','POST','PATCH','PUT','OPTIONS'],allow_headers=['Authorization','Content-Type'])
+                   allow_methods=['GET','POST','PATCH','PUT','DELETE','OPTIONS'],allow_headers=['Authorization','Content-Type'])
 
 @app.exception_handler(ExclusionViolation)
 @app.exception_handler(UniqueViolation)
@@ -44,7 +46,7 @@ async def invalid_reference(_,exc):
 async def http_error(_,exc:HTTPException):
     return JSONResponse({'error':'HTTP_ERROR','message':exc.detail},status_code=exc.status_code)
 
-for router in (identity,catalog,booking,payments,tracking,admin,support):
+for router in (identity,catalog,booking,payments,tracking,admin,corridor_operations,support,demo):
     app.include_router(router)
 
 @app.get('/health/live',tags=['Health'])
