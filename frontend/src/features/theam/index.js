@@ -3,8 +3,8 @@
  * The screen-size toggle changes presentation only; it never changes inventory.
  */
 import {$,node,state,loadPricing,formatBdt,formatTime,vehicleNames} from '../../core/context.js';
-import {subscriptionQuote} from '../../core/pricing.js';
-import {t} from '../../core/locale.js';
+import {subscriptionDiscount,subscriptionQuote} from '../../core/pricing.js';
+import {locale,t} from '../../core/locale.js';
 
 const plans=[
   {months:1,label:'1 Month'},
@@ -59,6 +59,17 @@ export function renderPlans(pricing){
     target.replaceChildren(node('p',{role:'status'},state.pricingFailed?'Subscription prices are temporarily unavailable.':'Loading subscription prices…'));
     return;
   }
+  const termDiscounts=plans.slice(1).map(({months})=>subscriptionDiscount(state.pricing,months));
+  const formatDiscount=(label,discount)=>t(label).replace('{discount}',discount.toLocaleString(locale));
+  for(const [index,plan] of plans.slice(1).entries()){
+    const option=$('months').querySelector('option[value="'+plan.months+'"]');
+    const discount=termDiscounts[index];
+    option.textContent=t(plan.label)+(discount ? ' · '+formatDiscount('Save {discount}%',discount) : '');
+  }
+  const maximum=Math.max(...termDiscounts);
+  $('theamPlanSavings').textContent=maximum
+    ? formatDiscount('Save up to {discount}%',maximum)
+    : t('1–12 month subscriptions');
   const selectedVehicle=$('searchForm').elements.namedItem('vehicleClass').value;
   target.replaceChildren(...plans.map(plan=>makePlanCard(plan,selectedVehicle||'hiace',!selectedVehicle)));
 }
