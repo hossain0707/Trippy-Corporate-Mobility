@@ -13,7 +13,7 @@ import {initializeDhakaLocations} from './features/locations/index.js';
 import './features/demand/index.js';
 import './features/support/index.js';
 import {initTheam} from './features/theam/index.js';
-import {initializeDevGate,showDevAccount} from './core/dev-gate.js';
+import {initializeDevGate,showDevAccount,showDevAccountError} from './core/dev-gate.js';
 function setPage(page){if(state.driverWatch!==null&&page!=='driver')stopDriverGPS();state.page=page;document.querySelectorAll('[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
   ['search','passes','tracking','driver','ops'].forEach(p=>$('page'+p[0].toUpperCase()+p.slice(1)).classList.toggle('hidden',p!==page));
   $('theamPublicShell').classList.toggle('hidden',page!=='search');
@@ -55,7 +55,10 @@ async function initialize(){const tomorrow=dhakaDay(1);$('startDate').value=tomo
             if(isDevGate)await loadRoutes();
           }
         } catch {
-          if (request === generation) showToast('Account services are temporarily unavailable.');
+          if (request === generation) {
+            if (isDevGate) showDevAccountError();
+            else showToast('Account services are temporarily unavailable.');
+          }
         }
       }, 0);
     }

@@ -421,3 +421,15 @@ html.theam-dev-auth body{background:linear-gradient(140deg,#001b27,#004c3d 65%,#
 .theam-dev-gate-card button.primary{border:0;color:#fff;background:linear-gradient(110deg,#00a975,#076148)}
 .theam-dev-gate-card button.outline{border:1px solid #9dccae;background:#eff8f2;color:#07523b}
 .theam-dev-gate-card #devGateStatus{min-height:20px;color:#466858;font-size:12px;line-height:1.5;margin:0;text-align:center}
+
+.theam-dev-gate[hidden], html.theam-dev-auth #app{display:none!important}
+.theam-dev-gate-card .dev-password-field{display:grid;gap:7px}
+.theam-dev-gate-card .password-input input{padding-inline-end:60px}
+.theam-dev-gate-card .password-toggle{display:grid;place-items:center;width:44px;min-height:44px}
+.theam-dev-gate-card #devGateStatus:empty{display:none}
+
+@media(max-width:600px){
+  .theam-dev-gate{padding:20px 16px}
+  .theam-dev-gate-card{padding:24px 20px}
+  .theam-dev-gate-card input{font-size:16px}
+}

@@ -57,7 +57,7 @@ export async function api(path,{method='GET',json,auth=false}={}){
   if(!configured)throw new Error('Booking is temporarily unavailable. Please try again later.');
   const headers={};let body;
   if(json!==undefined){headers['content-type']='application/json';body=JSON.stringify(json)}
-  if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers.authorization='Bearer '+data.session.access_token}
+  if(auth){const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw new Error('Sign in to continue');headers[import.meta.env.VITE_DEV_GATE==='true'?'X-Trippy-Authorization':'Authorization']='Bearer '+data.session.access_token}
   let res;try{res=await fetch(config.api+path,{method,headers,body,cache:'no-store'})}catch{throw new Error('We couldn’t connect right now. Please try again.')}
   let parsed=null;try{parsed=await res.json()}catch{}
   if(!res.ok){
