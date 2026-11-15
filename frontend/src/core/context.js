@@ -71,8 +71,7 @@ export async function api(path,{method='GET',json,auth=false}={}){
 }
 let pricingRequest;
 export function loadPricing() {
-  if(state.pricing)return Promise.resolve(state.pricing);
-  pricingRequest??=api('/api/pricing').then(pricing=>state.pricing=pricing).finally(()=>{pricingRequest=null;});
+  pricingRequest??=api('/api/pricing').then(pricing=>{if(!state.pricing||!pricing.revision||pricing.revision>=state.pricing.revision)state.pricing=pricing;return state.pricing;}).finally(()=>{pricingRequest=null;});
   return pricingRequest;
 }
 export function formatTime(t){if(!t)return '—';const [h,m]=String(t).split(':');const num=Number(h);return `${num%12||12}:${m} ${num>=12?'PM':'AM'}`}

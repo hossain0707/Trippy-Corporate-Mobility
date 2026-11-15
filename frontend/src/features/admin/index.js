@@ -1,3 +1,4 @@
+import {renderPricingEditor} from './pricing.js';
 import {$,node,state,api,formatTime,showToast} from '../../core/context.js';
 import {seatPositions} from './seatTemplates.js';
 import {openStaffVerification} from '../auth/index.js';
@@ -61,6 +62,7 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
     ['fleet', 'Vehicles & seats', 'Register vehicles, review seat layouts and approve documents'],
     ['routes', 'Stops & routes', 'Set pickup stops and morning/evening routes'],
     ['schedule', 'Timetables', 'Assign vehicles and departure times to approved routes'],
+    ['pricing', 'Pricing', 'Set monthly fares and subscription discounts'],
     ['staff', 'Drivers & roles', 'Manage driver access, licences and assignments'],
   ];
   const tabs = node('div', {className: 'ops-workspace-tabs', role: 'tablist', 'aria-label': 'Fleet management sections'});
@@ -121,6 +123,9 @@ function buildAdminForms(root,{stops,vehicles,routes,allServices}){
     row.append(left, node('span', {className: 'ops-status'+(vehicle.active ? ' ops-status-active' : '')},status));
     registry.append(row);
   }
+  renderPricingEditor(groups.pricing).catch(error=>{
+    groups.pricing.replaceChildren(node('p',{className:'error-note'},error.message));
+  });
   panels.fleet.insertBefore(registry, groups.fleet);
   const routesRegistry = node('div', {className: 'ops-registry'});
   routesRegistry.append(node('h4', {}, 'Routes · '+routes.length));

@@ -8,7 +8,7 @@ from ...core.errors import fail
 from ...core.limits import throttle
 from ...core.schemas import HoldRequest,DemandRequest
 from ..auth.router import actor
-from .pricing import quote,end_date
+from .pricing import quote,end_date,read_pricing
 from .corridors import segment_orders
 
 router=APIRouter(prefix='/api',tags=['Reservations'])
@@ -34,7 +34,7 @@ def create_hold(conn,user_id,d:HoldRequest):
         fail(422,'Seat is not a bookable seat of this vehicle')
     mp,md,ed,ep=segment_orders(conn,service['route_id'],d.pickupStopId,d.dropoffStopId)
     first=not user['welcome_redeemed_at'] and not one(conn,"SELECT 1 FROM app.reservations WHERE user_id=%s AND status='confirmed' LIMIT 1",(user_id,))
-    fare=quote(service['class'],d.months,first)
+    fare=quote(service['class'],d.months,first,read_pricing(conn))
     return one(conn,'''INSERT INTO app.reservations
         (user_id,service_id,seat_id,pickup_stop_id,dropoff_stop_id,starts_on,ends_before,months,
          base_amount_bdt,discount_percent,amount_bdt,applies_welcome_offer,hold_expires_at,idempotency_key,

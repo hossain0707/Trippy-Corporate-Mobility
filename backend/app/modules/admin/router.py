@@ -1,16 +1,67 @@
 """Staff-only audited fleet, corridors, schedules, identity assignments and capacity requests."""
+import json
+from pydantic import Field
 from uuid import UUID
 from fastapi import APIRouter,Depends
 from ...core.database import connection,one,rows,execute
-from ...core.schemas import NewStop,NewVehicle,VerifyVehicle,NewRoute,NewService,Activation,DriverAssignment,RoleChange,DriverCompliance,SeatLayout
+from ...core.schemas import NewStop,NewVehicle,VerifyVehicle,NewRoute,NewService,Activation,DriverAssignment,RoleChange,DriverCompliance,SeatLayout,Strict
 from ...core.errors import fail
 from ...core.clock import today
 from ..auth.router import require
+from ..booking.pricing import read_pricing
 
 router=APIRouter(prefix='/api/admin',tags=['Operations'])
 
 def audit(conn,actor,action,target,detail='{}'):
     execute(conn,'INSERT INTO app.audit_events(actor_id,action,target_id,detail) VALUES(%s,%s,%s,%s::jsonb)',(actor,action,target,detail))
+
+class MonthlyFares(Strict):
+    bus: int = Field(strict=True, ge=1, le=1000000)
+    hiace: int = Field(strict=True, ge=1, le=1000000)
+    car: int = Field(strict=True, ge=1, le=1000000)
+
+
+class PlanDiscounts(Strict):
+    firstMonth: int = Field(strict=True, ge=0, le=99)
+    threeMonths: int = Field(strict=True, ge=0, le=99)
+    sixMonths: int = Field(strict=True, ge=0, le=99)
+    twelveMonths: int = Field(strict=True, ge=0, le=99)
+
+
+class PricingUpdate(Strict):
+    monthly: MonthlyFares
+    discounts: PlanDiscounts
+    revision: int = Field(strict=True, ge=1)
+
+
+@router.get('/pricing')
+def get_subscription_pricing(user=Depends(require('admin'))):
+    with connection() as conn:
+        return read_pricing(conn)
+
+
+@router.put('/pricing')
+def update_subscription_pricing(data: PricingUpdate, user=Depends(require('admin'))):
+    monthly, discounts = data.monthly, data.discounts
+    if min(monthly.model_dump().values()) * (100 - max(discounts.model_dump().values())) < 100:
+        fail(422, 'Every discounted monthly fare must be at least ৳1')
+    with connection() as conn:
+        previous = read_pricing(conn, lock=True)
+        if previous['revision'] != data.revision:
+            fail(409, 'Pricing changed since you opened it. Reload the latest prices before editing.')
+        if previous['monthly'] == monthly.model_dump() and previous['discounts'] == discounts.model_dump():
+            return previous
+        execute(conn, """UPDATE app.subscription_pricing
+            SET bus=%s, hiace=%s, car=%s, first_month=%s, three_months=%s,
+                six_months=%s, twelve_months=%s, revision=revision+1
+            WHERE singleton""",
+            (monthly.bus, monthly.hiace, monthly.car, discounts.firstMonth,
+             discounts.threeMonths, discounts.sixMonths, discounts.twelveMonths))
+        current = read_pricing(conn)
+        audit(conn, user['id'], 'pricing.updated', None,
+              json.dumps({'previous': previous, 'current': current}))
+        return current
+
 
 @router.get('/overview')
 def overview(user=Depends(require('admin','dispatcher'))):

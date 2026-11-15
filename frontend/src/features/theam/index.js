@@ -51,7 +51,8 @@ function makePlanCard(plan,vehicle,isExample){
   };
   return button;
 }
-export function renderPlans(){
+export function renderPlans(pricing){
+  if(pricing?.monthly)state.pricing=pricing;
   const target=$('theamPlanGrid');
   if(!target)return;
   if(!state.pricing){
@@ -122,7 +123,7 @@ export function initTheam(navigate){
   $('months').addEventListener('change',renderPlans);
   $('searchForm').elements.namedItem('vehicleClass').addEventListener('change',renderPlans);
   loadPricing().catch(()=>{state.pricingFailed=true;}).then(renderPlans);
-  document.addEventListener('trippy:routes-loaded',event=>renderFeatured(event.detail?.services||[]));
+  document.addEventListener('trippy:routes-loaded',event=>{renderFeatured(event.detail?.services||[]);renderPlans();});
   renderPlans();
   renderFeatured([]);
   const opsSearch=$('theamOpsSearch');
@@ -140,12 +141,12 @@ export function initTheam(navigate){
         overview:'opsDashboard',routes:'opsBuilder',demand:'theamOpsDemandSection',
         fleet:'opsBuilder',scheduling:'opsBuilder',bookings:'theamOpsServicesSection',
         passengers:'theamOpsPassengerSection',operations:'opsBuilder',
-        analytics:'theamOpsAnalyticsSection',settings:'opsBuilder',
+        analytics:'theamOpsAnalyticsSection',settings:'opsBuilder',pricing:'opsBuilder',
       };
       scrollTo(targets[section]||'opsDashboard');
       const tab=section==='fleet'?'fleet':
         section==='routes'?'routes':section==='scheduling'?'schedule':
-        section==='settings'?'staff':null;
+        section==='settings'?'staff':section==='pricing'?'pricing':null;
       if(tab)document.getElementById('ops-tab-'+tab)?.click();
     };
   });
